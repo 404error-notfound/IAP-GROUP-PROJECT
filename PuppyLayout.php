@@ -151,10 +151,10 @@ class PuppyLayout
                 </div>
                 <div class="navbar-right">
                     <?php if ($conf['isLoggedIn']): ?>
-                        <a href="/signin">signin</a>
+                        <a href="logout.php">Logout</a>
                     <?php else: ?>
-                        <a href="/logout">Logout</a>
-                        <a href="/login">Login</a>
+                        <a href="login.php">Login</a>
+                        <a href="register.php">Register</a>
                     <?php endif; ?>
                 </div>
                 </div>
