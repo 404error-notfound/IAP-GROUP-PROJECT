@@ -144,17 +144,17 @@ class PuppyLayout
                     <h2 style="color: #5a2ca0;">Puppy Adoption</h2>
                     <a href="/home">Home</a>
                     <a href="/About us ">About us</a>
-                    <a href="/puppies/browse">Browse Puppies</a>
+                    <a href="BrowsePuppy.php">Browse Puppies</a>
                     <?php if ($conf['isOwner']): ?>
-                        <a href="/puppies/add">Add Puppy</a>
+                        <a href="AddPuppy.php">Add Puppy</a>
                     <?php endif; ?>
                 </div>
                 <div class="navbar-right">
                     <?php if ($conf['isLoggedIn']): ?>
-                        <a href="/signin">signin</a>
+                        <a href="logout.php">Logout</a>
                     <?php else: ?>
-                        <a href="/logout">Logout</a>
-                        <a href="/login">Login</a>
+                        <a href="login.php">Login</a>
+                        <a href="register.php">register</a>
                     <?php endif; ?>
                 </div>
                 </div>
