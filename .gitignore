@@ -1,0 +1,13 @@
+# Ignore environment files
+.env
+
+# Ignore database dumps/backups
+*.sql
+
+# Ignore IDE/editor configs (optional but recommended)
+.vscode/
+.idea/
+*.swp
+
+/vendor/
+/.env

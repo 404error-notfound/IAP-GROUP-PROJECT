@@ -154,7 +154,11 @@ class PuppyLayout
                         <a href="logout.php">Logout</a>
                     <?php else: ?>
                         <a href="login.php">Login</a>
+<<<<<<< HEAD
                         <a href="register.php">register</a>
+=======
+                        <a href="register.php">Register</a>
+>>>>>>> fe6b50c7bdffa84d47878f7363fb5aa959e52208
                     <?php endif; ?>
                 </div>
                 </div>

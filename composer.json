@@ -1,0 +1,19 @@
+{
+    "name": "angel/iap-group-project",
+    "type": "project",
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "Angel\\IapGroupProject\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Angela Omondi",
+            "email": "omondiangela426@gmail.com"
+        }
+    ],
+    "require": {
+        "vlucas/phpdotenv": "^5.6"
+    }
+}
