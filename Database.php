@@ -1,16 +1,5 @@
 <?php
-<<<<<<< HEAD
-// Database.php (Singleton pattern)
-class Database
-{
-    private static $instance = null;
-    private $connection;
 
-    private function __construct()
-    {
-        $this->connection = new PDO("mysql:host=localhost;dbname=go_puppy_go", "username", "password");
-        $this->connection->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-=======
 require_once __DIR__ . '/bootstrap.php';
 
 class Database {
@@ -48,9 +37,7 @@ class Database {
                     <p>Please check your <code>.env</code> settings.</p>
                 </div>
             ");
-        }
->>>>>>> fe6b50c7bdffa84d47878f7363fb5aa959e52208
-    }
+        }    }
 
 
     public static function getInstance()
