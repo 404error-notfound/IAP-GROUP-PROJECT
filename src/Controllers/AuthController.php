@@ -1,7 +1,9 @@
 <?php
 // AuthController.php
-require_once 'UserRepository.php';
-require_once 'user.php';
+namespace Angel\IapGroupProject\Controllers;
+
+use Angel\IapGroupProject\Repositories\UserRepository;
+use Angel\IapGroupProject\User;
 
 class AuthController {
     private $userRepository;

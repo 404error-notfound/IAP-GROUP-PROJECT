@@ -1,5 +1,7 @@
 <?php
 // User.php
+namespace Angel\IapGroupProject;
+
 class User {
     private $user_id;
     private $role_id;
@@ -186,4 +188,3 @@ class User {
         return $user;
     }
 }
-?>

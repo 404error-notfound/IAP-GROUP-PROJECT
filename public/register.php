@@ -1,6 +1,8 @@
 <?php
 // register.php
-require_once 'AuthController.php';
+require_once __DIR__ . '/../bootstrap.php';
+
+use Angel\IapGroupProject\Controllers\AuthController;
 
 $auth = new AuthController();
 

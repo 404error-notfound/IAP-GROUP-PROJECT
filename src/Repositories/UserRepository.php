@@ -1,7 +1,9 @@
 <?php
 // UserRepository.php
-require_once 'Database.php';
-require_once 'user.php';
+namespace Angel\IapGroupProject\Repositories;
+
+use Angel\IapGroupProject\Database;
+use Angel\IapGroupProject\User;
 
 class UserRepository {
     private $db;

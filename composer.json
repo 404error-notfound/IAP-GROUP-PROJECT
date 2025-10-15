@@ -4,7 +4,7 @@
     "license": "MIT",
     "autoload": {
         "psr-4": {
-            "Angel\\IapGroupProject\\": "src/"
+            "Angel\\IapGroupProject\\": ["src/", "Models/"]
         }
     },
     "authors": [
