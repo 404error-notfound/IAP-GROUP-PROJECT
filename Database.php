@@ -9,8 +9,9 @@ class Database {
     private function __construct() {
         try {
             $dsn = sprintf(
-                "mysql:host=%s;dbname=%s;charset=%s",
+                "mysql:host=%s;port=%s;dbname=%s;charset=%s",
                 $_ENV['DB_HOST'],
+                $_ENV['DB_PORT'],
                 $_ENV['DB_NAME'],
                 $_ENV['DB_CHARSET']
             );
