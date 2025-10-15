@@ -1,29 +1,47 @@
 <?php
 // User.php
 class User {
-    private $id;
+    private $user_id;
+    private $role_id;
+    private $gender_id;
+    private $full_name;
     private $email;
-    private $username;
-    private $password;
-    private $role; // 'user', 'owner', 'admin'
-    private $createdAt;
+    private $password_hash;
+    private $verified;
+    private $created_at;
+    
+    // Additional properties for role and gender names
+    private $role_name;
+    private $gender_name;
 
-    public function __construct($email, $password, $role = 'user', $username = null, $id = null) {
-        $this->id = $id;
+    public function __construct($full_name, $email, $password, $role_id = 1, $gender_id = null, $user_id = null) {
+        $this->user_id = $user_id;
+        $this->full_name = $full_name;
         $this->email = $email;
-        $this->username = $username ?? $email;
+        $this->role_id = $role_id;
+        $this->gender_id = $gender_id;
+        $this->verified = 0;
+        
         if (strlen($password) < 60) { // Not already hashed
             $this->setPassword($password);
         } else {
-            $this->password = $password; // Already hashed from database
+            $this->password_hash = $password; // Already hashed from database
         }
-        $this->role = $role;
-        $this->createdAt = $this->createdAt ?? date('Y-m-d H:i:s');
+        
+        $this->created_at = $this->created_at ?? date('Y-m-d H:i:s');
     }
 
     // Getters
+    public function getUserId() {
+        return $this->user_id;
+    }
+
     public function getId() {
-        return $this->id;
+        return $this->user_id; // Alias for compatibility
+    }
+
+    public function getFullName() {
+        return $this->full_name;
     }
 
     public function getEmail() {
@@ -31,70 +49,141 @@ class User {
     }
 
     public function getUsername() {
-        return $this->username;
+        return $this->full_name; // Use full_name as username
+    }
+
+    public function getRoleId() {
+        return $this->role_id;
+    }
+
+    public function getRoleName() {
+        return $this->role_name;
     }
 
     public function getRole() {
-        return $this->role;
+        return $this->role_name; // For compatibility
+    }
+
+    public function getGenderId() {
+        return $this->gender_id;
+    }
+
+    public function getGenderName() {
+        return $this->gender_name;
+    }
+
+    public function getPasswordHash() {
+        return $this->password_hash;
+    }
+
+    public function isVerified() {
+        return $this->verified == 1;
     }
 
     public function getCreatedAt() {
-        return $this->createdAt;
+        return $this->created_at;
     }
 
     // Setters
+    public function setUserId($user_id) {
+        $this->user_id = $user_id;
+    }
+
     public function setId($id) {
-        $this->id = $id;
+        $this->user_id = $id; // Alias for compatibility
     }
 
     public function setPassword($password) {
-        $this->password = password_hash($password, PASSWORD_DEFAULT);
+        $this->password_hash = password_hash($password, PASSWORD_DEFAULT);
     }
 
     public function setEmail($email) {
         $this->email = $email;
     }
 
-    public function setUsername($username) {
-        $this->username = $username;
+    public function setFullName($full_name) {
+        $this->full_name = $full_name;
     }
 
-    public function setRole($role) {
-        $this->role = $role;
+    public function setRoleId($role_id) {
+        $this->role_id = $role_id;
+    }
+
+    public function setRoleName($role_name) {
+        $this->role_name = $role_name;
+    }
+
+    public function setGenderId($gender_id) {
+        $this->gender_id = $gender_id;
+    }
+
+    public function setGenderName($gender_name) {
+        $this->gender_name = $gender_name;
+    }
+
+    public function setVerified($verified) {
+        $this->verified = $verified;
+    }
+
+    public function setCreatedAt($created_at) {
+        $this->created_at = $created_at;
     }
 
     // Authentication methods
     public function verifyPassword($password) {
-        return password_verify($password, $this->password);
+        return password_verify($password, $this->password_hash);
     }
 
     public function isAdmin() {
-        return $this->role === 'admin';
+        return $this->role_name === 'admin';
     }
 
     public function isOwner() {
-        return $this->role === 'owner' || $this->role === 'admin';
+        return $this->role_name === 'rehomer' || $this->role_name === 'admin';
+    }
+
+    public function isRehomer() {
+        return $this->role_name === 'rehomer';
+    }
+
+    public function isClient() {
+        return $this->role_name === 'client';
     }
 
     public function isUser() {
-        return $this->role === 'user' || $this->role === 'owner' || $this->role === 'admin';
+        return in_array($this->role_name, ['client', 'rehomer', 'admin']);
     }
 
     // Convert to array for session storage
     public function toArray() {
         return [
-            'id' => $this->id,
+            'user_id' => $this->user_id,
+            'full_name' => $this->full_name,
             'email' => $this->email,
-            'username' => $this->username,
-            'role' => $this->role,
-            'created_at' => $this->createdAt
+            'role_id' => $this->role_id,
+            'role_name' => $this->role_name,
+            'gender_id' => $this->gender_id,
+            'gender_name' => $this->gender_name,
+            'verified' => $this->verified,
+            'created_at' => $this->created_at
         ];
     }
 
     // Create User from array (for session data)
     public static function fromArray($data) {
-        $user = new User($data['email'], '', $data['role'], $data['username'], $data['id']);
-        $user->createdAt = $data['created_at'];
+        $user = new User(
+            $data['full_name'], 
+            $data['email'], 
+            '', // Empty password since it's from session
+            $data['role_id'], 
+            $data['gender_id'] ?? null,
+            $data['user_id']
+        );
+        $user->setRoleName($data['role_name'] ?? '');
+        $user->setGenderName($data['gender_name'] ?? '');
+        $user->setVerified($data['verified'] ?? 0);
+        $user->setCreatedAt($data['created_at']);
         return $user;
     }
 }
+?>
