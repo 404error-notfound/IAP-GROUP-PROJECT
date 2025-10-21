@@ -373,7 +373,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <div class="form-row">
                     <div class="form-group">
                         <select name="gender" required>
-                            <option value="">Gender</option>
                             <option value="male" <?php echo ($_POST['gender'] ?? '') === 'male' ? 'selected' : ''; ?>>Male</option>
                             <option value="female" <?php echo ($_POST['gender'] ?? '') === 'female' ? 'selected' : ''; ?>>Female</option>
                             <option value="other" <?php echo ($_POST['gender'] ?? '') === 'other' ? 'selected' : ''; ?>>Other</option>
