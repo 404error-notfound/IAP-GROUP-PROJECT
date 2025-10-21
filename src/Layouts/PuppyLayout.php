@@ -129,6 +129,63 @@ class PuppyLayout
                     width: 50px;
                     margin-bottom: 10px;
                 }
+               .dropdown {
+    position: relative;
+    display: inline-block;
+    z-index: 10; /* ensures it appears above the background */
+}
+
+.dropdown button {
+    background-color: #5a2ca0;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 25px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 15px;
+    transition: background 0.3s ease;
+}
+
+.dropdown button:hover {
+    background-color: #7b44d2;
+}
+
+.dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: white;
+    top: 110%; /* dropdown appears below the button */
+    left: 0;
+    min-width: 230px;
+    padding: 15px;
+    border-radius: 10px;
+    box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2);
+    z-index: 999; /* stays above background image */
+}
+
+.dropdown-content form input {
+    width: 100%;
+    padding: 8px;
+    margin: 6px 0;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+.dropdown-content input[type="submit"] {
+    background-color: #5a2ca0;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    width: 100%;
+}
+
+.dropdown:hover .dropdown-content {
+    display: block;
+}
+
             </style>
         </head>
 
@@ -141,9 +198,9 @@ class PuppyLayout
             <nav class="navbar" aria-label="Fifth navbar example">
 
                 <div class="navbar-left">
-                    <h2 style="color: #5a2ca0;">Puppy Adoption</h2>
+                    <h2 style="color: #5a2ca0;">Go.Puppy.Go</h2>
                     <a href="/home">Home</a>
-                    <a href="/About us ">About us</a>
+                    <a href="/about us ">About us</a>
                     <a href="BrowsePuppy.php">Browse Puppies</a>
                     <?php if ($conf['isOwner']): ?>
                         <a href="AddPuppy.php">Add Puppy</a>
@@ -154,14 +211,20 @@ class PuppyLayout
                         <a href="logout.php">Logout</a>
                     <?php else: ?>
                         <a href="login.php">Login</a>
-<<<<<<< HEAD
                         <a href="register.php">register</a>
-=======
-                        <a href="register.php">Register</a>
->>>>>>> fe6b50c7bdffa84d47878f7363fb5aa959e52208
-                    <?php endif; ?>
-                </div>
-                </div>
+                        <div class="dropdown">
+    <button>Administration Home</button>
+    <div class="dropdown-content">
+        <form action="AdministrativeHome.php" method="POST">
+            <input type="text" name="username" placeholder="Username" required><br>
+            <input type="password" name="password" placeholder="Password" required><br>
+            <input type="submit" value="Login">
+        </form>
+    </div>
+</div>
+<?php endif; ?>
+</div>
+</div>
 
             </nav>
             <div class="container py-4">
