@@ -21,7 +21,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $email = trim($_POST['email'] ?? '');
         $full_name = trim($_POST['name'] ?? '');
         $password = $_POST['password'] ?? '';
-        $confirmPassword = $_POST['password'] ?? ''; // Using same password field
+        $confirmPassword = $_POST['confirm_password'] ?? '';
         $account_type = $_POST['account_type'] ?? 'client';
         $gender = $_POST['gender'] ?? null;
         $phone = $_POST['phone'] ?? null;
@@ -51,9 +51,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $contact_email_1, 
             $contact_email_2
         )) {
-            $_SESSION['flash_messages'] = $auth->getMessages();
-            header("Location: login.php");
-            exit;
+            $messages = $auth->getMessages();
+            // Don't redirect, show success message on same page
         } else {
             $errors = $auth->getErrors();
         }
@@ -134,9 +133,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         .account-type {
             display: flex;
-            gap: 20px;
+            gap: 15px;
             margin-bottom: 30px;
             justify-content: center;
+            flex-wrap: wrap;
         }
 
         .radio-option {
@@ -290,19 +290,177 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             color: #721c24;
         }
 
-        .error-list {
+        .alert-success {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+
+        .error-list, .success-list {
             list-style: none;
             margin: 0;
             padding: 0;
         }
 
-        .error-list li {
+        .error-list li, .success-list li {
             margin-bottom: 5px;
         }
 
         .error-list li:before {
             content: "• ";
             color: #dc3545;
+        }
+
+        .success-list li:before {
+            content: "• ";
+            color: #28a745;
+        }
+
+        /* Password Strength Indicator */
+        .password-section {
+            grid-column: 1 / -1;
+        }
+
+        .password-strength {
+            margin-bottom: 15px;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            background: #f8f9fa;
+        }
+
+        .strength-label {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #333;
+        }
+
+        .strength-bar {
+            width: 100%;
+            height: 8px;
+            background-color: #e0e0e0;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 5px;
+        }
+
+        .strength-fill {
+            height: 100%;
+            width: 0%;
+            transition: all 0.3s ease;
+            border-radius: 4px;
+        }
+
+        .strength-weak .strength-fill {
+            width: 25%;
+            background-color: #dc3545;
+        }
+
+        .strength-fair .strength-fill {
+            width: 50%;
+            background-color: #fd7e14;
+        }
+
+        .strength-good .strength-fill {
+            width: 75%;
+            background-color: #ffc107;
+        }
+
+        .strength-strong .strength-fill {
+            width: 100%;
+            background-color: #28a745;
+        }
+
+        .strength-text {
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .strength-weak .strength-text {
+            color: #dc3545;
+        }
+
+        .strength-fair .strength-text {
+            color: #fd7e14;
+        }
+
+        .strength-good .strength-text {
+            color: #ffc107;
+        }
+
+        .strength-strong .strength-text {
+            color: #28a745;
+        }
+
+        .password-requirements {
+            font-size: 11px;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .password-requirements ul {
+            margin: 0;
+            padding-left: 15px;
+        }
+
+        .password-requirements li {
+            margin: 2px 0;
+        }
+
+        .password-requirements li.valid {
+            color: #28a745;
+        }
+
+        .password-requirements li.invalid {
+            color: #dc3545;
+        }
+
+        /* Password Toggle Functionality */
+        .password-wrapper {
+            position: relative;
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: #666;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 500;
+            padding: 2px 6px;
+            border-radius: 3px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .password-toggle:hover {
+            color: #4472c4;
+            background-color: #f8f9fa;
+        }
+
+        .password-toggle:focus {
+            outline: none;
+            color: #4472c4;
+            background-color: #e9ecef;
+        }
+
+        .password-toggle:active {
+            background-color: #dee2e6;
+        }
+
+        /* Adjust padding for password inputs to make room for toggle button */
+        .password-wrapper input[type="password"],
+        .password-wrapper input[type="text"] {
+            padding-right: 50px;
         }
 
         @media (max-width: 768px) {
@@ -321,6 +479,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             .account-type {
                 flex-direction: column;
                 align-items: center;
+                gap: 10px;
+            }
+            
+            .radio-option label {
+                min-width: 100px;
             }
         }
     </style>
@@ -346,6 +509,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </div>
             <?php endif; ?>
 
+            <?php if (!empty($messages)): ?>
+                <div class="alert alert-success">
+                    <div style="display: flex; align-items: center; margin-bottom: 15px;">
+                        <span style="font-size: 24px; margin-right: 15px;">✅</span>
+                        <h3 style="margin: 0; color: #155724;">Registration Successful!</h3>
+                    </div>
+                    <ul class="success-list">
+                        <?php foreach ($messages as $message): ?>
+                            <li><?php echo htmlspecialchars($message); ?></li>
+                        <?php endforeach; ?>
+                    </ul>
+                    <div style="margin-top: 20px; padding-top: 15px; border-top: 1px solid #c3e6cb;">
+                        <p style="margin: 0; font-weight: 500;">
+                            <strong>Next Steps:</strong> Check your email inbox (and spam folder) for the verification link.
+                        </p>
+                        <div style="margin-top: 15px;">
+                            <a href="login.php" style="background: #28a745; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block; font-weight: 500;">
+                                Go to Login Page
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            <?php endif; ?>
+
             <form method="POST" action="">
                 <!-- Account Type Selection -->
                 <div class="account-type">
@@ -356,6 +543,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <div class="radio-option">
                         <input type="radio" id="rehomer" name="account_type" value="rehomer">
                         <label for="rehomer">Rehomer</label>
+                    </div>
+                    <div class="radio-option">
+                        <input type="radio" id="admin" name="account_type" value="admin">
+                        <label for="admin">Admin</label>
                     </div>
                 </div>
 
@@ -398,14 +589,58 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             value="<?php echo htmlspecialchars($_POST['phone'] ?? ''); ?>"
                         >
                     </div>
+                </div>
+
+                <!-- Password Section with Strength Indicator -->
+                <div class="form-group password-section">
+                    <div class="password-strength" id="password-strength-indicator">
+                        <div class="strength-label">Password Strength</div>
+                        <div class="strength-bar">
+                            <div class="strength-fill"></div>
+                        </div>
+                        <div class="strength-text">Enter a password to see strength</div>
+                        <div class="password-requirements">
+                            <ul>
+                                <li id="length-req" class="invalid">At least 8 characters</li>
+                                <li id="upper-req" class="invalid">At least one uppercase letter</li>
+                                <li id="lower-req" class="invalid">At least one lowercase letter</li>
+                                <li id="number-req" class="invalid">At least one number</li>
+                                <li id="special-req" class="invalid">At least one special character (!@#$%^&*)</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-row">
                     <div class="form-group">
-                        <input 
-                            type="password" 
-                            name="password" 
-                            placeholder="Password"
-                            required
-                            minlength="6"
-                        >
+                        <div class="password-wrapper">
+                            <input 
+                                type="password" 
+                                name="password" 
+                                placeholder="Enter Password"
+                                required
+                                minlength="8"
+                                id="password-field"
+                            >
+                            <button type="button" class="password-toggle" onclick="togglePassword('password-field', this)">
+                                Show
+                            </button>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="password-wrapper">
+                            <input 
+                                type="password" 
+                                name="confirm_password" 
+                                placeholder="Confirm Password"
+                                required
+                                minlength="8"
+                                id="confirm-password-field"
+                            >
+                            <button type="button" class="password-toggle" onclick="togglePassword('confirm-password-field', this)">
+                                Show
+                            </button>
+                        </div>
                     </div>
                 </div>
 
@@ -526,6 +761,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         function handleAccountTypeChange() {
             const clientRadio = document.getElementById('client');
             const rehomerRadio = document.getElementById('rehomer');
+            const adminRadio = document.getElementById('admin');
             
             // Dog preferences elements
             const dogPreferencesSection = document.getElementById('dog-preferences-section');
@@ -578,6 +814,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 licenseInputs[0].required = true; // license_number
                 licenseInputs[1].required = true; // location
                 
+            } else if (adminRadio.checked) {
+                // ADMIN: Hide both dog preferences and license fields
+                dogPreferencesSection.style.display = 'none';
+                dogPreferencesFields.style.display = 'none';
+                licenseSection.style.display = 'none';
+                licenseFields.style.display = 'none';
+                contactFields.style.display = 'none';
+                
+                // Clear all values for admin
+                dogPreferenceInputs.forEach(input => {
+                    if (input) {
+                        input.value = '';
+                        input.required = false;
+                    }
+                });
+                
+                breedCheckboxes.forEach(checkbox => {
+                    checkbox.checked = false;
+                });
+                
+                licenseInputs.forEach(input => {
+                    if (input) {
+                        input.required = false;
+                        input.value = '';
+                    }
+                });
+                
             } else {
                 // CLIENT: Show dog preferences, hide license fields
                 dogPreferencesSection.style.display = 'block';
@@ -601,6 +864,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Add event listeners for radio buttons
         document.getElementById('client').addEventListener('change', handleAccountTypeChange);
         document.getElementById('rehomer').addEventListener('change', handleAccountTypeChange);
+        document.getElementById('admin').addEventListener('change', handleAccountTypeChange);
 
         // Initialize form state on page load
         handleAccountTypeChange();
@@ -611,6 +875,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             const email = document.querySelector('input[name="email"]').value.trim();
             const password = document.querySelector('input[name="password"]').value;
             const isRehomer = document.getElementById('rehomer').checked;
+            const isAdmin = document.getElementById('admin').checked;
 
             if (!name) {
                 e.preventDefault();
@@ -626,9 +891,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 return;
             }
 
-            if (!password || password.length < 6) {
+            const confirmPassword = document.querySelector('input[name="confirm_password"]').value;
+
+            if (!password || password.length < 8) {
                 e.preventDefault();
-                alert('Please enter a password (at least 6 characters).');
+                alert('Please enter a password (at least 8 characters).');
+                document.querySelector('input[name="password"]').focus();
+                return;
+            }
+
+            if (password !== confirmPassword) {
+                e.preventDefault();
+                alert('Passwords do not match. Please enter the same password in both fields.');
+                document.querySelector('input[name="confirm_password"]').focus();
+                return;
+            }
+
+            // Check password strength
+            const strength = checkPasswordStrength(password);
+            if (strength.score < 3) {
+                e.preventDefault();
+                alert('Please use a stronger password. Your password should include uppercase, lowercase, numbers, and special characters.');
                 document.querySelector('input[name="password"]').focus();
                 return;
             }
@@ -653,10 +936,100 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
             }
 
+            // Admin accounts get a confirmation prompt
+            if (isAdmin) {
+                const confirmAdmin = confirm('You are registering as an administrator. Admin accounts have full system access. Are you sure you want to continue?');
+                if (!confirmAdmin) {
+                    e.preventDefault();
+                    return;
+                }
+            }
+
             // Show loading state
             const submitBtn = document.querySelector('button[name="register"]');
             submitBtn.textContent = 'Creating Account...';
             submitBtn.disabled = true;
+        });
+
+        // Password Strength Functionality
+        function checkPasswordStrength(password) {
+            let score = 0;
+            const requirements = {
+                length: password.length >= 8,
+                upper: /[A-Z]/.test(password),
+                lower: /[a-z]/.test(password),
+                number: /[0-9]/.test(password),
+                special: /[!@#$%^&*(),.?":{}|<>]/.test(password)
+            };
+
+            // Calculate score
+            Object.values(requirements).forEach(req => req && score++);
+
+            return { score, requirements };
+        }
+
+        function updatePasswordStrength(password) {
+            const strengthIndicator = document.getElementById('password-strength-indicator');
+            const strengthBar = strengthIndicator.querySelector('.strength-fill');
+            const strengthText = strengthIndicator.querySelector('.strength-text');
+            
+            if (!password) {
+                strengthIndicator.className = 'password-strength';
+                strengthText.textContent = 'Enter a password to see strength';
+                return;
+            }
+
+            const { score, requirements } = checkPasswordStrength(password);
+            
+            // Update requirements list
+            document.getElementById('length-req').className = requirements.length ? 'valid' : 'invalid';
+            document.getElementById('upper-req').className = requirements.upper ? 'valid' : 'invalid';
+            document.getElementById('lower-req').className = requirements.lower ? 'valid' : 'invalid';
+            document.getElementById('number-req').className = requirements.number ? 'valid' : 'invalid';
+            document.getElementById('special-req').className = requirements.special ? 'valid' : 'invalid';
+
+            // Update strength display
+            strengthIndicator.className = 'password-strength';
+            if (score <= 1) {
+                strengthIndicator.classList.add('strength-weak');
+                strengthText.textContent = 'Weak';
+            } else if (score <= 2) {
+                strengthIndicator.classList.add('strength-fair');
+                strengthText.textContent = 'Fair';
+            } else if (score <= 4) {
+                strengthIndicator.classList.add('strength-good');
+                strengthText.textContent = 'Good';
+            } else {
+                strengthIndicator.classList.add('strength-strong');
+                strengthText.textContent = 'Strong';
+            }
+        }
+
+        function checkPasswordMatch() {
+            const password = document.getElementById('password-field').value;
+            const confirmPassword = document.getElementById('confirm-password-field').value;
+            const confirmField = document.getElementById('confirm-password-field');
+
+            if (confirmPassword && password !== confirmPassword) {
+                confirmField.style.borderColor = '#dc3545';
+                confirmField.style.boxShadow = '0 0 0 0.2rem rgba(220, 53, 69, 0.25)';
+            } else if (confirmPassword && password === confirmPassword) {
+                confirmField.style.borderColor = '#28a745';
+                confirmField.style.boxShadow = '0 0 0 0.2rem rgba(40, 167, 69, 0.25)';
+            } else {
+                confirmField.style.borderColor = '#e0e0e0';
+                confirmField.style.boxShadow = 'none';
+            }
+        }
+
+        // Add event listeners for password fields
+        document.getElementById('password-field').addEventListener('input', function() {
+            updatePasswordStrength(this.value);
+            checkPasswordMatch();
+        });
+
+        document.getElementById('confirm-password-field').addEventListener('input', function() {
+            checkPasswordMatch();
         });
 
         // Clear any previous form errors when user starts typing
@@ -666,6 +1039,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 alerts.forEach(alert => alert.style.display = 'none');
             });
         });
+
+        // Password Toggle Functionality
+        function togglePassword(fieldId, button) {
+            const passwordField = document.getElementById(fieldId);
+            const isPassword = passwordField.type === 'password';
+            
+            // Toggle input type
+            passwordField.type = isPassword ? 'text' : 'password';
+            
+            // Toggle button text
+            button.textContent = isPassword ? 'Hide' : 'Show';
+            
+            // Optional: Add tooltip
+            button.title = isPassword ? 'Hide password' : 'Show password';
+        }
     </script>
 </body>
 </html>

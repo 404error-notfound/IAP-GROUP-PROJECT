@@ -1,5 +1,7 @@
 <?php
-require_once "PuppyLayout.php"; // adjust if your class file has a different name
+require_once __DIR__ . '/../bootstrap.php';
+
+use Angel\IapGroupProject\Layouts\PuppyLayout;
 
 $layout = new PuppyLayout();
 

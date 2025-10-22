@@ -176,5 +176,72 @@ class UserRepository {
         ");
         return $stmt->execute([$user_id, $license_number, $location, $contact_email]);
     }
+
+    public function saveVerificationToken($user_id, $token, $expires_at) {
+        $stmt = $this->db->prepare("
+            INSERT INTO email_verification_tokens (user_id, token, expires_at) 
+            VALUES (?, ?, ?)
+        ");
+        return $stmt->execute([$user_id, $token, $expires_at]);
+    }
+
+    public function verifyEmailToken($token) {
+        $stmt = $this->db->prepare("
+            SELECT evt.user_id, evt.expires_at, evt.used 
+            FROM email_verification_tokens evt 
+            WHERE evt.token = ? AND evt.used = FALSE
+        ");
+        $stmt->execute([$token]);
+        $tokenData = $stmt->fetch();
+        
+        if (!$tokenData) {
+            return false; // Token not found or already used
+        }
+        
+        if (new \DateTime() > new \DateTime($tokenData['expires_at'])) {
+            return false; // Token expired
+        }
+        
+        // Mark token as used
+        $updateStmt = $this->db->prepare("
+            UPDATE email_verification_tokens 
+            SET used = TRUE 
+            WHERE token = ?
+        ");
+        $updateStmt->execute([$token]);
+        
+        // Mark user as verified
+        $verifyStmt = $this->db->prepare("
+            UPDATE users 
+            SET verified = TRUE 
+            WHERE user_id = ?
+        ");
+        $verifyStmt->execute([$tokenData['user_id']]);
+        
+        return $tokenData['user_id'];
+    }
+
+    public function saveAdminData($user_id, $access_code) {
+        $stmt = $this->db->prepare("
+            INSERT INTO admin (user_id, access_code) 
+            VALUES (?, ?)
+            ON DUPLICATE KEY UPDATE 
+                access_code = VALUES(access_code)
+        ");
+        return $stmt->execute([$user_id, $access_code]);
+    }
+
+    public function getAdminByAccessCode($access_code) {
+        $stmt = $this->db->prepare("
+            SELECT a.*, u.*, ur.role_name, ug.gender_name 
+            FROM admin a
+            JOIN users u ON a.user_id = u.user_id
+            LEFT JOIN user_roles ur ON u.role_id = ur.role_id
+            LEFT JOIN user_gender ug ON u.gender_id = ug.gender_id
+            WHERE a.access_code = ? AND u.verified = TRUE
+        ");
+        $stmt->execute([$access_code]);
+        return $stmt->fetch();
+    }
 }
 ?>

@@ -4,6 +4,7 @@ namespace Angel\IapGroupProject\Controllers;
 
 use Angel\IapGroupProject\Repositories\UserRepository;
 use Angel\IapGroupProject\User;
+use Angel\IapGroupProject\Services\EmailService;
 
 class AuthController {
     private $userRepository;
@@ -201,9 +202,47 @@ class AuthController {
                         $location, 
                         $contact_email
                     );
+                } elseif ($account_type === 'admin') {
+                    // Generate and save admin access code
+                    $emailService = new EmailService();
+                    $adminAccessCode = $emailService->generateAdminAccessCode();
+                    $this->userRepository->saveAdminData($user->getUserId(), $adminAccessCode);
                 }
                 
-                $this->messages[] = "Account created successfully! You can now login.";
+                // Generate verification token and send email
+                $emailService = new EmailService();
+                $verificationToken = $emailService->generateVerificationToken();
+                $expiresAt = date('Y-m-d H:i:s', strtotime('+24 hours'));
+                
+                // Save verification token
+                $this->userRepository->saveVerificationToken($user->getUserId(), $verificationToken, $expiresAt);
+                
+                // Send verification email
+                $isAdmin = ($account_type === 'admin');
+                $adminAccessCode = null;
+                
+                if ($isAdmin) {
+                    // Get the admin access code for email
+                    $adminData = $this->userRepository->getAdminByAccessCode($adminAccessCode ?? '');
+                    if (!$adminData) {
+                        // Fallback: regenerate and get the code
+                        $emailServiceTemp = new EmailService();
+                        $adminAccessCode = $emailServiceTemp->generateAdminAccessCode();
+                        $this->userRepository->saveAdminData($user->getUserId(), $adminAccessCode);
+                    } else {
+                        $adminAccessCode = $adminData['access_code'];
+                    }
+                }
+                
+                if ($emailService->sendVerificationEmail($email, $full_name, $verificationToken, $isAdmin, $adminAccessCode)) {
+                    $this->messages[] = "Registration successful! A verification email has been sent to " . $email . ". Please check your email and click the verification link to activate your account.";
+                    if ($isAdmin) {
+                        $this->messages[] = "As an administrator, you will receive a unique access code in your email that must be used for login.";
+                    }
+                } else {
+                    $this->messages[] = "Account created successfully, but there was an issue sending the verification email. Please contact support.";
+                }
+                
                 return true;
             } else {
                 $this->errors[] = "Registration failed. Please try again.";
