@@ -235,12 +235,13 @@ class AuthController {
                 }
                 
                 if ($emailService->sendVerificationEmail($email, $full_name, $verificationToken, $isAdmin, $adminAccessCode)) {
-                    $this->messages[] = "Registration successful! A verification email has been sent to " . $email . ". Please check your email and click the verification link to activate your account.";
+                    $this->messages[] = "🎉 Registration successful! A verification email has been sent to " . $email;
+                    $this->messages[] = "� Please check your email inbox (and spam folder) and click the verification link to activate your account.";
                     if ($isAdmin) {
-                        $this->messages[] = "As an administrator, you will receive a unique access code in your email that must be used for login.";
+                        $this->messages[] = "🔑 As an administrator, you will receive a unique access code in your email that must be used for login.";
                     }
                 } else {
-                    $this->messages[] = "Account created successfully, but there was an issue sending the verification email. Please contact support.";
+                    $this->messages[] = "❌ Account created successfully, but there was an issue sending the verification email. Please check your email configuration or contact support.";
                 }
                 
                 return true;

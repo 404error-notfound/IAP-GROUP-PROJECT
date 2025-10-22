@@ -17,7 +17,8 @@ $messages = [];
 
 // Handle registration form submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (isset($_POST['register'])) {
+    // Process registration if we have the required fields
+    if (isset($_POST['name']) && isset($_POST['email']) && isset($_POST['password'])) {
         $email = trim($_POST['email'] ?? '');
         $full_name = trim($_POST['name'] ?? '');
         $password = $_POST['password'] ?? '';
@@ -36,7 +37,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $contact_email_1 = $_POST['contact_email_1'] ?? null;
         $contact_email_2 = $_POST['contact_email_2'] ?? null;
         
-        if ($auth->register(
+        $registrationResult = $auth->register(
             $email, 
             $full_name, 
             $password, 
@@ -50,7 +51,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $location, 
             $contact_email_1, 
             $contact_email_2
-        )) {
+        );
+        
+        if ($registrationResult) {
             $messages = $auth->getMessages();
             // Don't redirect, show success message on same page
         } else {
@@ -463,6 +466,80 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             padding-right: 50px;
         }
 
+        /* Email Notification Styles */
+        .email-notification {
+            margin-top: 20px;
+            padding: 20px;
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+            border: 2px solid #2196f3;
+            border-radius: 10px;
+            animation: slideIn 0.5s ease-out;
+        }
+
+        .notification-content {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .notification-icon {
+            font-size: 2.5em;
+            flex-shrink: 0;
+        }
+
+        .notification-text h4 {
+            margin: 0 0 8px 0;
+            color: #1976d2;
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .notification-text p {
+            margin: 0;
+            color: #1565c0;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Loading State for Register Button */
+        .register-btn.loading {
+            background: #6c757d;
+            cursor: not-allowed;
+            position: relative;
+        }
+
+        .register-btn.loading::after {
+            content: '';
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            margin: auto;
+            border: 2px solid transparent;
+            border-top-color: #ffffff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            right: 0;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
         @media (max-width: 768px) {
             .container {
                 margin: 10px;
@@ -510,23 +587,37 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <?php endif; ?>
 
             <?php if (!empty($messages)): ?>
-                <div class="alert alert-success">
+                <div class="alert alert-success" id="success-alert">
                     <div style="display: flex; align-items: center; margin-bottom: 15px;">
-                        <span style="font-size: 24px; margin-right: 15px;">✅</span>
-                        <h3 style="margin: 0; color: #155724;">Registration Successful!</h3>
+                        <span style="font-size: 32px; margin-right: 15px;">🎉</span>
+                        <div>
+                            <h3 style="margin: 0; color: #155724; font-size: 22px;">Registration Successful!</h3>
+                            <p style="margin: 5px 0 0 0; color: #155724; font-size: 16px; font-weight: 500;">
+                                📧 <strong>Verification Email Sent!</strong>
+                            </p>
+                        </div>
                     </div>
-                    <ul class="success-list">
-                        <?php foreach ($messages as $message): ?>
-                            <li><?php echo htmlspecialchars($message); ?></li>
-                        <?php endforeach; ?>
-                    </ul>
+                    <div style="background: rgba(21, 87, 36, 0.1); padding: 15px; border-radius: 8px; margin: 15px 0;">
+                        <h4 style="margin: 0 0 10px 0; color: #155724; font-size: 16px;">
+                            ✉️ Check Your Email Now
+                        </h4>
+                        <ul class="success-list" style="margin: 0;">
+                            <?php foreach ($messages as $message): ?>
+                                <li style="font-size: 14px;"><?php echo htmlspecialchars($message); ?></li>
+                            <?php endforeach; ?>
+                        </ul>
+                    </div>
                     <div style="margin-top: 20px; padding-top: 15px; border-top: 1px solid #c3e6cb;">
-                        <p style="margin: 0; font-weight: 500;">
-                            <strong>Next Steps:</strong> Check your email inbox (and spam folder) for the verification link.
+                        <p style="margin: 0 0 15px 0; font-weight: 500; font-size: 14px; color: #155724;">
+                            <strong>⚠️ Important:</strong> You must verify your email before logging in. 
+                            Check your <strong>inbox AND spam folder</strong>.
                         </p>
-                        <div style="margin-top: 15px;">
-                            <a href="login.php" style="background: #28a745; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block; font-weight: 500;">
-                                Go to Login Page
+                        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                            <a href="login.php" style="background: #28a745; color: white; padding: 12px 20px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: 500; font-size: 14px;">
+                                ➡️ Go to Login Page
+                            </a>
+                            <a href="register.php" style="background: #6c757d; color: white; padding: 12px 20px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: 500; font-size: 14px;">
+                                ➕ Register Another User
                             </a>
                         </div>
                     </div>
@@ -746,9 +837,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     </div>
                 </div>
 
-                <button type="submit" name="register" class="register-btn">
+                <button type="submit" name="register" class="register-btn" id="register-button">
                     Register
                 </button>
+                
+                <!-- Email Verification Notification Area -->
+                <div id="email-notification" class="email-notification" style="display: <?php echo !empty($messages) ? 'block' : 'none'; ?>;">
+                    <div class="notification-content">
+                        <div class="notification-icon">✉️</div>
+                        <div class="notification-text">
+                            <h4>Verification Email Sent!</h4>
+                            <p>We've sent a verification link to your email address. Please check your inbox (and spam folder) to complete your registration.</p>
+                        </div>
+                    </div>
+                </div>
             </form>
         </div>
     </div>
@@ -869,86 +971,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Initialize form state on page load
         handleAccountTypeChange();
 
-        // Form validation
+        // Form validation - Simplified version
         document.querySelector('form').addEventListener('submit', function(e) {
-            const name = document.querySelector('input[name="name"]').value.trim();
-            const email = document.querySelector('input[name="email"]').value.trim();
-            const password = document.querySelector('input[name="password"]').value;
-            const isRehomer = document.getElementById('rehomer').checked;
-            const isAdmin = document.getElementById('admin').checked;
-
-            if (!name) {
-                e.preventDefault();
-                alert('Please enter your name.');
-                document.querySelector('input[name="name"]').focus();
-                return;
-            }
-
-            if (!email) {
-                e.preventDefault();
-                alert('Please enter your email address.');
-                document.querySelector('input[name="email"]').focus();
-                return;
-            }
-
-            const confirmPassword = document.querySelector('input[name="confirm_password"]').value;
-
-            if (!password || password.length < 8) {
-                e.preventDefault();
-                alert('Please enter a password (at least 8 characters).');
-                document.querySelector('input[name="password"]').focus();
-                return;
-            }
-
-            if (password !== confirmPassword) {
-                e.preventDefault();
-                alert('Passwords do not match. Please enter the same password in both fields.');
-                document.querySelector('input[name="confirm_password"]').focus();
-                return;
-            }
-
-            // Check password strength
-            const strength = checkPasswordStrength(password);
-            if (strength.score < 3) {
-                e.preventDefault();
-                alert('Please use a stronger password. Your password should include uppercase, lowercase, numbers, and special characters.');
-                document.querySelector('input[name="password"]').focus();
-                return;
-            }
-
-            // Additional validation for rehomers
-            if (isRehomer) {
-                const licenseNumber = document.getElementById('license_number_field').value.trim();
-                const location = document.getElementById('location_field').value.trim();
-
-                if (!licenseNumber) {
-                    e.preventDefault();
-                    alert('License number is required for rehomers.');
-                    document.getElementById('license_number_field').focus();
-                    return;
-                }
-
-                if (!location) {
-                    e.preventDefault();
-                    alert('Location is required for rehomers.');
-                    document.getElementById('location_field').focus();
-                    return;
-                }
-            }
-
-            // Admin accounts get a confirmation prompt
-            if (isAdmin) {
-                const confirmAdmin = confirm('You are registering as an administrator. Admin accounts have full system access. Are you sure you want to continue?');
-                if (!confirmAdmin) {
-                    e.preventDefault();
-                    return;
-                }
-            }
-
-            // Show loading state
-            const submitBtn = document.querySelector('button[name="register"]');
+            console.log('Form submission started...');
+            
+            // Show loading state immediately
+            const submitBtn = document.getElementById('register-button');
             submitBtn.textContent = 'Creating Account...';
             submitBtn.disabled = true;
+            submitBtn.classList.add('loading');
+            
+            // Hide any existing notifications
+            const emailNotification = document.getElementById('email-notification');
+            if (emailNotification) {
+                emailNotification.style.display = 'none';
+            }
+            
+            console.log('Form will submit normally...');
+            // Let the form submit normally - HTML5 validation will handle basic checks
         });
 
         // Password Strength Functionality
@@ -1039,6 +1079,42 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 alerts.forEach(alert => alert.style.display = 'none');
             });
         });
+
+        // Add feedback for form interaction
+        document.addEventListener('DOMContentLoaded', function() {
+            // Reset button state if there were validation errors
+            const submitBtn = document.getElementById('register-button');
+            if (submitBtn) {
+                submitBtn.textContent = 'Register';
+                submitBtn.disabled = false;
+                submitBtn.classList.remove('loading');
+            }
+        });
+
+        // Show email notification if registration was successful
+        <?php if (!empty($messages)): ?>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Hide the regular success message after 2 seconds and show the email notification
+            setTimeout(function() {
+                const successAlert = document.querySelector('.alert-success');
+                const emailNotification = document.getElementById('email-notification');
+                
+                if (successAlert && emailNotification) {
+                    // Fade out success alert
+                    successAlert.style.transition = 'opacity 0.5s ease';
+                    successAlert.style.opacity = '0';
+                    
+                    setTimeout(function() {
+                        successAlert.style.display = 'none';
+                        // Show email notification
+                        emailNotification.style.display = 'block';
+                        // Scroll to notification
+                        emailNotification.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }, 500);
+                }
+            }, 3000); // Show success message for 3 seconds before switching
+        });
+        <?php endif; ?>
 
         // Password Toggle Functionality
         function togglePassword(fieldId, button) {

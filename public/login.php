@@ -1,6 +1,8 @@
 <?php
 // login.php
-require_once 'AuthController.php';
+require_once __DIR__ . '/../bootstrap.php';
+
+use Angel\IapGroupProject\Controllers\AuthController;
 
 $auth = new AuthController();
 
@@ -22,8 +24,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $password = $_POST['password'] ?? '';
         
         if ($auth->login($identifier, $password)) {
-            // Successful login - redirect to dashboard or intended page
-            $redirectUrl = $_SESSION['redirect_after_login'] ?? 'dashboard.php';
+            // Successful login - redirect based on user role
+            $user = $auth->getCurrentUser();
+            $defaultRedirect = 'dashboard.php'; // Default for clients
+            
+            if ($user && $user->getRoleName()) {
+                switch ($user->getRoleName()) {
+                    case 'admin':
+                        $defaultRedirect = 'admin-dashboard.php';
+                        break;
+                    case 'rehomer':
+                        $defaultRedirect = 'dashboard.php'; // or create rehomer-dashboard.php if needed
+                        break;
+                    case 'client':
+                    default:
+                        $defaultRedirect = 'dashboard.php';
+                        break;
+                }
+            }
+            
+            $redirectUrl = $_SESSION['redirect_after_login'] ?? $defaultRedirect;
             unset($_SESSION['redirect_after_login']);
             header("Location: $redirectUrl");
             exit;

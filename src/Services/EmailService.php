@@ -2,6 +2,10 @@
 
 namespace Angel\IapGroupProject\Services;
 
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\SMTP;
+use PHPMailer\PHPMailer\Exception;
+
 class EmailService {
     private $smtpHost;
     private $smtpPort;
@@ -100,47 +104,115 @@ class EmailService {
     }
 
     private function sendEmail($to, $subject, $htmlMessage) {
-        // Convert HTML to plain text for fallback
-        $plainMessage = strip_tags(str_replace(['<br>', '<br/>', '<br />'], "\n", $htmlMessage));
-        
-        // Headers
-        $headers = [
-            'MIME-Version: 1.0',
-            'Content-Type: text/html; charset=UTF-8',
-            'From: ' . $this->fromName . ' <' . $this->fromAddress . '>',
-            'Reply-To: ' . $this->fromAddress,
-            'X-Mailer: PHP/' . phpversion()
-        ];
-        
-        // For development/testing - log email instead of sending
-        if ($this->isDevEnvironment()) {
-            return $this->logEmail($to, $subject, $htmlMessage);
+        try {
+            // Create PHPMailer instance
+            $mail = new PHPMailer(true);
+            
+            // Server settings
+            $mail->isSMTP();
+            $mail->Host = $this->smtpHost;
+            $mail->SMTPAuth = true;
+            $mail->Username = $this->username;
+            $mail->Password = $this->password;
+            $mail->SMTPSecure = $this->encryption === 'tls' ? PHPMailer::ENCRYPTION_STARTTLS : PHPMailer::ENCRYPTION_SMTPS;
+            $mail->Port = $this->smtpPort;
+            
+            // For development debugging (uncomment if needed)
+            // $mail->SMTPDebug = SMTP::DEBUG_SERVER;
+            
+            // Recipients
+            $mail->setFrom($this->fromAddress, $this->fromName);
+            $mail->addAddress($to);
+            
+            // Content
+            $mail->isHTML(true);
+            $mail->Subject = $subject;
+            $mail->Body = $htmlMessage;
+            
+            // Create plain text version
+            $mail->AltBody = strip_tags(str_replace(['<br>', '<br/>', '<br />'], "\n", $htmlMessage));
+            
+            // Send the email
+            $result = $mail->send();
+            
+            // Log successful send
+            if ($result) {
+                error_log("✅ Email sent successfully to: " . $to);
+            }
+            
+            return $result;
+            
+        } catch (Exception $e) {
+            error_log("❌ Email send failed to " . $to . ": " . $e->getMessage());
+            
+            // In case of failure, also log email for debugging
+            $this->logEmail($to, $subject, $htmlMessage);
+            
+            return false;
         }
-        
-        // Send email using PHP's mail function
-        // Note: In production, you'd want to use a proper email library like PHPMailer or SwiftMailer
-        return mail($to, $subject, $htmlMessage, implode("\r\n", $headers));
     }
 
-    private function isDevEnvironment() {
-        // Check if we're in development (no proper SMTP configured)
-        return empty($this->username) || $this->smtpHost === 'localhost';
+    public function isDevEnvironment() {
+        // Return false to always try sending real emails
+        // Change this to true if you want to disable email sending for testing
+        return false;
     }
 
     private function logEmail($to, $subject, $message) {
-        $logFile = __DIR__ . '/../../logs/emails.log';
-        $logDir = dirname($logFile);
+        $logDir = __DIR__ . '/../../logs/emails';
         
         // Create logs directory if it doesn't exist
         if (!file_exists($logDir)) {
             mkdir($logDir, 0755, true);
         }
         
+        // Create a unique filename for each email
+        $filename = date('Y-m-d_H-i-s') . '_' . preg_replace('/[^a-zA-Z0-9]/', '_', $to) . '.html';
+        $emailFile = $logDir . '/' . $filename;
+        
+        // Create the full HTML email content
+        $htmlContent = '<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>' . htmlspecialchars($subject) . '</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+        .email-container { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); max-width: 600px; margin: 0 auto; }
+        .header { background: #4472c4; color: white; padding: 15px; margin: -20px -20px 20px -20px; border-radius: 8px 8px 0 0; }
+        .email-info { background: #e3f2fd; padding: 10px; border-radius: 5px; margin-bottom: 20px; font-size: 14px; }
+        .content { line-height: 1.6; }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <div class="header">
+            <h1 style="margin: 0;">' . htmlspecialchars($subject) . '</h1>
+        </div>
+        <div class="email-info">
+            <strong>📧 EMAIL LOG (Development Mode)</strong><br>
+            <strong>To:</strong> ' . htmlspecialchars($to) . '<br>
+            <strong>Subject:</strong> ' . htmlspecialchars($subject) . '<br>
+            <strong>Timestamp:</strong> ' . date('Y-m-d H:i:s') . '<br>
+            <strong>Note:</strong> This email was logged instead of being sent (development mode)
+        </div>
+        <div class="content">
+            ' . $message . '
+        </div>
+    </div>
+</body>
+</html>';
+
+        // Save the email to file
+        file_put_contents($emailFile, $htmlContent);
+        
+        // Also log to main emails.log for reference
+        $logFile = $logDir . '/../emails.log';
         $logEntry = [
             'timestamp' => date('Y-m-d H:i:s'),
             'to' => $to,
             'subject' => $subject,
-            'message' => $message,
+            'file_saved' => $filename,
             'separator' => str_repeat('=', 80)
         ];
         
