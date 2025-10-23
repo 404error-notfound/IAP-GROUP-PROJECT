@@ -1,0 +1,41 @@
+body.dashboard-body {
+  display: grid;
+  grid-template-areas:
+    "sidebar topbar"
+    "sidebar content";
+  grid-template-columns: 220px 1fr;
+  grid-template-rows: 60px 1fr;
+  background-color: white;
+  color: #333;
+}
+
+.sidebar {
+  grid-area: sidebar;
+  background: #f9f9f9;
+  border-right: 1px solid #ddd;
+  padding: 1rem;
+}
+
+.topbar {
+  grid-area: topbar;
+  background: #fff;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 1.5rem;
+}
+
+.content {
+  grid-area: content;
+  padding: 2rem;
+}
+
+.card {
+  background: #fff;
+  border: 1px solid #eee;
+  padding: 1rem;
+  margin: 0.5rem;
+  border-radius: 10px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
