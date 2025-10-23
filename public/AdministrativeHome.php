@@ -1,9 +1,9 @@
 <?php
-require_once 'PuppyLayout.php';
-require_once 'Database.php';
-require_once 'vendor/autoload.php';
+require_once __DIR__ . '/../src/Layouts/PuppyLayout.php';
+require_once __DIR__ . '/../src/Database.php';
+require_once __DIR__ . '/../vendor/autoload.php';
 
-class AdministrativeHome extends PuppyLayout
+class AdministrativeHome extends PuppyLayout()
 {
     public function nav($conf)
     {
