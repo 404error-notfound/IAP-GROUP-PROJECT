@@ -8,7 +8,25 @@ $auth = new AuthController();
 
 // Redirect if already logged in
 if ($auth->isLoggedIn()) {
-    $redirectUrl = $_SESSION['redirect_after_login'] ?? 'dashboard.php';
+    $user = $auth->getCurrentUser();
+    $defaultRedirect = 'client/client-dashboard.php';
+    
+    if ($user && $user->getRoleName()) {
+        switch ($user->getRoleName()) {
+            case 'admin':
+                $defaultRedirect = 'admin/admin-dashboard.php';
+                break;
+            case 'rehomer':
+                $defaultRedirect = 'rehomer/rehomer-dashboard.php';
+                break;
+            case 'client':
+            default:
+                $defaultRedirect = 'client/client-dashboard.php';
+                break;
+        }
+    }
+    
+    $redirectUrl = $_SESSION['redirect_after_login'] ?? $defaultRedirect;
     unset($_SESSION['redirect_after_login']);
     header("Location: $redirectUrl");
     exit;
@@ -26,19 +44,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($auth->login($identifier, $password)) {
             // Successful login - redirect based on user role
             $user = $auth->getCurrentUser();
-            $defaultRedirect = 'dashboard.php'; // Default for clients
+            $defaultRedirect = 'client/client-dashboard.php'; // Default for clients
             
             if ($user && $user->getRoleName()) {
                 switch ($user->getRoleName()) {
                     case 'admin':
-                        $defaultRedirect = 'admin-dashboard.php';
+                        $defaultRedirect = 'admin/admin-dashboard.php';
                         break;
                     case 'rehomer':
-                        $defaultRedirect = 'dashboard.php'; // or create rehomer-dashboard.php if needed
+                        $defaultRedirect = 'rehomer/rehomer-dashboard.php';
                         break;
                     case 'client':
                     default:
-                        $defaultRedirect = 'dashboard.php';
+                        $defaultRedirect = 'client/client-dashboard.php';
                         break;
                 }
             }
@@ -322,9 +340,23 @@ if (isset($_SESSION['flash_messages'])) {
                 return;
             }
 
+            if (identifier.length < 3) {
+                e.preventDefault();
+                alert('Email or username must be at least 3 characters long.');
+                document.getElementById('identifier').focus();
+                return;
+            }
+
             if (!password) {
                 e.preventDefault();
                 alert('Please enter your password.');
+                document.getElementById('password').focus();
+                return;
+            }
+
+            if (password.length < 6) {
+                e.preventDefault();
+                alert('Password must be at least 6 characters long.');
                 document.getElementById('password').focus();
                 return;
             }

@@ -40,6 +40,12 @@ class AuthController {
             $user = $this->userRepository->findByEmailOrUsername($identifier);
 
             if ($user && $user->verifyPassword($password)) {
+                // Check if user is verified
+                if (!$user->isVerified()) {
+                    $this->errors[] = "Please verify your email address before logging in. Check your email for the verification link.";
+                    return false;
+                }
+                
                 // Successful login
                 $this->createUserSession($user);
                 return true;

@@ -23,10 +23,13 @@ class EmailService {
         $this->encryption = $_ENV['MAIL_ENCRYPTION'] ?? 'tls';
         $this->fromAddress = $_ENV['MAIL_FROM_ADDRESS'] ?? 'noreply@gopuppygo.com';
         $this->fromName = $_ENV['MAIL_FROM_NAME'] ?? 'Go Puppy Go';
+        
+        // Debug logging
+        error_log("EmailService config - Host: " . $this->smtpHost . ", Port: " . $this->smtpPort . ", User: " . $this->username);
     }
 
     public function sendVerificationEmail($email, $fullName, $verificationToken, $isAdmin = false, $adminAccessCode = null) {
-        $subject = "Verify Your Go Puppy Go Account";
+        $subject = "Welcome to Go Puppy Go - Account Created Successfully";
         $verificationLink = $this->getBaseUrl() . "/verify-email.php?token=" . urlencode($verificationToken);
         
         $message = $this->buildVerificationEmailHtml($fullName, $verificationLink, $isAdmin, $adminAccessCode);
@@ -58,7 +61,7 @@ class EmailService {
         <head>
             <meta charset="UTF-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>Verify Your Email - Go Puppy Go</title>
+            <title>Account Created - Go Puppy Go</title>
         </head>
         <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
             <div style="background-color: #4472c4; color: white; padding: 30px; text-align: center; border-radius: 8px 8px 0 0;">
@@ -67,27 +70,20 @@ class EmailService {
             </div>
             
             <div style="background-color: #f8f9fa; padding: 30px; border-radius: 0 0 8px 8px; border: 1px solid #dee2e6;">
-                <h2 style="color: #4472c4; margin: 0 0 20px 0;">Hello ' . htmlspecialchars($fullName) . '!</h2>
+                <h2 style="color: #4472c4; margin: 0 0 20px 0; font-size: 24px;">Hello, ' . htmlspecialchars($fullName) . '</h2>
                 
-                <p>Thank you for registering with Go Puppy Go! To complete your account setup, please verify your email address by clicking the button below:</p>
+                <p style="font-size: 16px; margin: 20px 0;">Thank you for registering with Go Puppy Go! Your account has been created successfully.</p>
+                
+                <p style="font-size: 16px; margin: 20px 0;"><strong>Proceed to log in to the system.</strong></p>
                 
                 <div style="text-align: center; margin: 30px 0;">
-                    <a href="' . htmlspecialchars($verificationLink) . '" 
-                       style="background-color: #28a745; color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block;">
-                        ✅ Verify Email Address
+                    <a href="' . $this->getBaseUrl() . '/login.php" 
+                       style="background-color: #28a745; color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block; font-size: 16px;">
+                        🚀 Login Now
                     </a>
                 </div>
                 
                 ' . $adminSection . '
-                
-                <div style="background-color: #e9ecef; padding: 15px; border-radius: 4px; margin: 20px 0;">
-                    <p style="margin: 0; font-size: 14px; color: #495057;">
-                        <strong>Alternative verification:</strong> If the button above doesn\'t work, copy and paste this link into your browser:
-                    </p>
-                    <p style="margin: 5px 0 0 0; word-break: break-all; font-size: 12px; color: #6c757d;">
-                        ' . htmlspecialchars($verificationLink) . '
-                    </p>
-                </div>
                 
                 <div style="border-top: 1px solid #dee2e6; padding-top: 20px; margin-top: 30px; font-size: 14px; color: #6c757d;">
                     <p><strong>Security Notice:</strong> This verification link will expire in 24 hours for your security.</p>
@@ -117,7 +113,7 @@ class EmailService {
             $mail->SMTPSecure = $this->encryption === 'tls' ? PHPMailer::ENCRYPTION_STARTTLS : PHPMailer::ENCRYPTION_SMTPS;
             $mail->Port = $this->smtpPort;
             
-            // For development debugging (uncomment if needed)
+            // For development debugging (disabled for now)
             // $mail->SMTPDebug = SMTP::DEBUG_SERVER;
             
             // Recipients
@@ -144,6 +140,7 @@ class EmailService {
             
         } catch (Exception $e) {
             error_log("❌ Email send failed to " . $to . ": " . $e->getMessage());
+            error_log("❌ Email configuration - Host: " . $this->smtpHost . ", Port: " . $this->smtpPort . ", User: " . $this->username);
             
             // In case of failure, also log email for debugging
             $this->logEmail($to, $subject, $htmlMessage);

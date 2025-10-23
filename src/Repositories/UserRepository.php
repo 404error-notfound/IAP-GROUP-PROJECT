@@ -4,6 +4,7 @@ namespace Angel\IapGroupProject\Repositories;
 
 use Angel\IapGroupProject\Database;
 use Angel\IapGroupProject\User;
+use PDO;
 
 class UserRepository {
     private $db;
@@ -21,7 +22,7 @@ class UserRepository {
             WHERE u.email = ?
         ");
         $stmt->execute([$email]);
-        $userData = $stmt->fetch(PDO::FETCH_ASSOC);
+        $userData = $stmt->fetch(\PDO::FETCH_ASSOC);
         
         if ($userData) {
             $user = new User(
@@ -51,7 +52,7 @@ class UserRepository {
             WHERE u.email = ? OR u.full_name = ?
         ");
         $stmt->execute([$identifier, $identifier]);
-        $userData = $stmt->fetch(PDO::FETCH_ASSOC);
+        $userData = $stmt->fetch(\PDO::FETCH_ASSOC);
         
         if ($userData) {
             $user = new User(
@@ -139,19 +140,19 @@ class UserRepository {
     // Get all roles
     public function getAllRoles() {
         $stmt = $this->db->query("SELECT * FROM user_roles");
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        return $stmt->fetchAll(\PDO::FETCH_ASSOC);
     }
 
     // Get all genders
     public function getAllGenders() {
         $stmt = $this->db->query("SELECT * FROM user_gender");
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        return $stmt->fetchAll(\PDO::FETCH_ASSOC);
     }
 
     // Get all breeds
     public function getAllBreeds() {
         $stmt = $this->db->query("SELECT * FROM breeds ORDER BY breed_name");
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        return $stmt->fetchAll(\PDO::FETCH_ASSOC);
     }
 
     // Save client-specific data
