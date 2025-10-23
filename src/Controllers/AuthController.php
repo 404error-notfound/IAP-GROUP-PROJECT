@@ -2,23 +2,26 @@
 // AuthController.php
 namespace Angel\IapGroupProject\Controllers;
 
+require_once __DIR__ . '/../Repositories/UserRepository.php';
 use Angel\IapGroupProject\Repositories\UserRepository;
 use Angel\IapGroupProject\User;
-use Angel\IapGroupProject\Services\EmailService;
 
-class AuthController {
+class AuthController
+{
     private $userRepository;
     private $errors = [];
     private $messages = [];
 
-    public function __construct() {
+    public function __construct()
+    {
         $this->userRepository = new UserRepository();
         if (session_status() == PHP_SESSION_NONE) {
             session_start();
         }
     }
 
-    public function login($identifier, $password) {
+    public function login($identifier, $password)
+    {
         // Clear previous errors
         $this->errors = [];
 
@@ -53,34 +56,38 @@ class AuthController {
                 $this->errors[] = "Invalid credentials";
                 return false;
             }
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $this->errors[] = "Login failed. Please try again.";
             return false;
         }
     }
 
-    public function logout() {
+    public function logout()
+    {
         // Clear all session data
         session_unset();
         session_destroy();
-        
+
         // Start a new session for flash messages
         session_start();
         $this->messages[] = "You have been logged out successfully.";
     }
 
-    public function isLoggedIn() {
+    public function isLoggedIn()
+    {
         return isset($_SESSION['user']) && !empty($_SESSION['user']);
     }
 
-    public function getCurrentUser() {
+    public function getCurrentUser()
+    {
         if ($this->isLoggedIn()) {
             return User::fromArray($_SESSION['user']);
         }
         return null;
     }
 
-    public function requireLogin($redirectUrl = '/login.php') {
+    public function requireLogin($redirectUrl = '/login.php')
+    {
         if (!$this->isLoggedIn()) {
             $_SESSION['redirect_after_login'] = $_SERVER['REQUEST_URI'];
             header("Location: $redirectUrl");
@@ -88,9 +95,10 @@ class AuthController {
         }
     }
 
-    public function requireRole($role, $redirectUrl = '/index.php') {
+    public function requireRole($role, $redirectUrl = '/index.php')
+    {
         $this->requireLogin();
-        
+
         $user = $this->getCurrentUser();
         if (!$user) {
             header("Location: /login.php");
@@ -117,17 +125,19 @@ class AuthController {
         }
     }
 
-    private function createUserSession(User $user) {
+    private function createUserSession(User $user)
+    {
         // Regenerate session ID for security
         session_regenerate_id(true);
-        
+
         // Store user data in session
         $_SESSION['user'] = $user->toArray();
         $_SESSION['login_time'] = time();
         $_SESSION['last_activity'] = time();
     }
 
-    public function register($email, $full_name, $password, $confirmPassword, $account_type = 'client', $gender = null, $phone = null, $preferred_breed = null, $preferred_age = null, $license_number = null, $location = null, $contact_email_1 = null, $contact_email_2 = null) {
+    public function register($email, $full_name, $password, $confirmPassword, $account_type = 'client', $gender = null, $phone = null, $preferred_breed = null, $preferred_age = null, $license_number = null, $location = null, $contact_email_1 = null, $contact_email_2 = null)
+    {
         $this->errors = [];
 
         // Validate input
@@ -181,7 +191,7 @@ class AuthController {
 
             // Create new user
             $user = new User($full_name, $email, $password, $role_id, $gender_id);
-            
+
             if ($this->userRepository->save($user)) {
                 // Save additional data based on account type
                 if ($account_type === 'client') {
@@ -196,100 +206,66 @@ class AuthController {
                         $dog_preferences['age'] = $preferred_age;
                     }
                     $preferences_json = !empty($dog_preferences) ? json_encode($dog_preferences) : null;
-                    
+
                     $this->userRepository->saveClientData($user->getUserId(), $preferences_json);
-                    
+
                 } elseif ($account_type === 'rehomer') {
                     // Use contact_email_1 as the primary contact email
                     $contact_email = $contact_email_1 ?: $email;
                     $this->userRepository->saveRehomerData(
-                        $user->getUserId(), 
-                        $license_number, 
-                        $location, 
+                        $user->getUserId(),
+                        $license_number,
+                        $location,
                         $contact_email
                     );
-                } elseif ($account_type === 'admin') {
-                    // Generate and save admin access code
-                    $emailService = new EmailService();
-                    $adminAccessCode = $emailService->generateAdminAccessCode();
-                    $this->userRepository->saveAdminData($user->getUserId(), $adminAccessCode);
                 }
-                
-                // Generate verification token and send email
-                $emailService = new EmailService();
-                $verificationToken = $emailService->generateVerificationToken();
-                $expiresAt = date('Y-m-d H:i:s', strtotime('+24 hours'));
-                
-                // Save verification token
-                $this->userRepository->saveVerificationToken($user->getUserId(), $verificationToken, $expiresAt);
-                
-                // Send verification email
-                $isAdmin = ($account_type === 'admin');
-                $adminAccessCode = null;
-                
-                if ($isAdmin) {
-                    // Get the admin access code for email
-                    $adminData = $this->userRepository->getAdminByAccessCode($adminAccessCode ?? '');
-                    if (!$adminData) {
-                        // Fallback: regenerate and get the code
-                        $emailServiceTemp = new EmailService();
-                        $adminAccessCode = $emailServiceTemp->generateAdminAccessCode();
-                        $this->userRepository->saveAdminData($user->getUserId(), $adminAccessCode);
-                    } else {
-                        $adminAccessCode = $adminData['access_code'];
-                    }
-                }
-                
-                if ($emailService->sendVerificationEmail($email, $full_name, $verificationToken, $isAdmin, $adminAccessCode)) {
-                    $this->messages[] = "🎉 Registration successful! A verification email has been sent to " . $email;
-                    $this->messages[] = "� Please check your email inbox (and spam folder) and click the verification link to activate your account.";
-                    if ($isAdmin) {
-                        $this->messages[] = "🔑 As an administrator, you will receive a unique access code in your email that must be used for login.";
-                    }
-                } else {
-                    $this->messages[] = "❌ Account created successfully, but there was an issue sending the verification email. Please check your email configuration or contact support.";
-                }
-                
+
+                $this->messages[] = "Account created successfully! You can now login.";
                 return true;
             } else {
                 $this->errors[] = "Registration failed. Please try again.";
                 return false;
             }
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             error_log("Registration error: " . $e->getMessage());
             $this->errors[] = "Registration failed. Please try again.";
             return false;
         }
     }
 
-    public function getErrors() {
+    public function getErrors()
+    {
         return $this->errors;
     }
 
-    public function getMessages() {
+    public function getMessages()
+    {
         return $this->messages;
     }
 
-    public function getLastError() {
+    public function getLastError()
+    {
         return end($this->errors);
     }
 
-    public function getLastMessage() {
+    public function getLastMessage()
+    {
         return end($this->messages);
     }
 
     // Check session timeout (30 minutes)
-    public function checkSessionTimeout($timeoutMinutes = 30) {
+    public function checkSessionTimeout($timeoutMinutes = 30)
+    {
         if (isset($_SESSION['last_activity'])) {
             $inactive = time() - $_SESSION['last_activity'];
-            
+
             if ($inactive >= ($timeoutMinutes * 60)) {
                 $this->logout();
                 $this->errors[] = "Session expired. Please login again.";
                 return false;
             }
         }
-        
+
         $_SESSION['last_activity'] = time();
         return true;
     }

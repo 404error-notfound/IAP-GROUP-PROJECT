@@ -2,6 +2,8 @@
 // login.php
 require_once __DIR__ . '/../bootstrap.php';
 
+require_once __DIR__ . '/../src/Controllers/AuthController.php';
+
 use Angel\IapGroupProject\Controllers\AuthController;
 
 $auth = new AuthController();
@@ -40,7 +42,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['login'])) {
         $identifier = trim($_POST['identifier'] ?? '');
         $password = $_POST['password'] ?? '';
-        
+
         if ($auth->login($identifier, $password)) {
             // Successful login - redirect based on user role
             $user = $auth->getCurrentUser();
@@ -64,7 +66,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         break;
                 }
             }
-            
+
             $redirectUrl = $_SESSION['redirect_after_login'] ?? $defaultRedirect;
             unset($_SESSION['redirect_after_login']);
             
@@ -87,6 +89,7 @@ if (isset($_SESSION['flash_messages'])) {
 ?>
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -257,13 +260,14 @@ if (isset($_SESSION['flash_messages'])) {
             .login-container {
                 padding: 30px 20px;
             }
-            
+
             .logo h1 {
                 font-size: 2em;
             }
         }
     </style>
 </head>
+
 <body>
     <div class="login-container">
         <div class="logo">
@@ -294,27 +298,15 @@ if (isset($_SESSION['flash_messages'])) {
         <form method="POST" action="">
             <div class="form-group">
                 <label for="identifier">Email or Username</label>
-                <input 
-                    type="text" 
-                    id="identifier" 
-                    name="identifier" 
-                    placeholder="Enter your email or username"
-                    value="<?php echo htmlspecialchars($_POST['identifier'] ?? ''); ?>"
-                    required
-                    autocomplete="username"
-                >
+                <input type="text" id="identifier" name="identifier" placeholder="Enter your email or username"
+                    value="<?php echo htmlspecialchars($_POST['identifier'] ?? ''); ?>" required
+                    autocomplete="username">
             </div>
 
             <div class="form-group">
                 <label for="password">Password</label>
-                <input 
-                    type="password" 
-                    id="password" 
-                    name="password" 
-                    placeholder="Enter your password"
-                    required
-                    autocomplete="current-password"
-                >
+                <input type="password" id="password" name="password" placeholder="Enter your password" required
+                    autocomplete="current-password">
             </div>
 
             <button type="submit" name="login" class="btn">
@@ -337,7 +329,7 @@ if (isset($_SESSION['flash_messages'])) {
         document.getElementById('identifier').focus();
 
         // Form validation
-        document.querySelector('form').addEventListener('submit', function(e) {
+        document.querySelector('form').addEventListener('submit', function (e) {
             const identifier = document.getElementById('identifier').value.trim();
             const password = document.getElementById('password').value;
 
@@ -377,11 +369,12 @@ if (isset($_SESSION['flash_messages'])) {
 
         // Clear any previous form errors when user starts typing
         document.querySelectorAll('input').forEach(input => {
-            input.addEventListener('input', function() {
+            input.addEventListener('input', function () {
                 const alerts = document.querySelectorAll('.alert-danger');
                 alerts.forEach(alert => alert.style.display = 'none');
             });
         });
     </script>
 </body>
+
 </html>
