@@ -5,7 +5,6 @@ namespace Angel\IapGroupProject\Repositories;
 use PDO;
 use Angel\IapGroupProject\Database;
 use Angel\IapGroupProject\User;
-use PDO;
 
 class UserRepository
 {
