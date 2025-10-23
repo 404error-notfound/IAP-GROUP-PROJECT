@@ -1,13 +1,13 @@
 <?php
-<<<<<<< HEAD
+
 require_once __DIR__ . '/../bootstrap.php';
 
 use Angel\IapGroupProject\Layouts\PuppyLayout;
 
-=======
+
 require_once __DIR__ . '/../src/Layouts/PuppyLayout.php'; // adjust if your class file has a different name
 require_once __DIR__ . '/../src/Controllers/AuthController.php';
->>>>>>> 4e9323e (Removing Registered users and Adopted puppies.php file)
+
 $layout = new PuppyLayout();
 
 $conf = [
