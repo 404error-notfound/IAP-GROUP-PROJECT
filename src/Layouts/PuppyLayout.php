@@ -130,63 +130,66 @@ class PuppyLayout
                     width: 50px;
                     margin-bottom: 10px;
                 }
-               .dropdown {
-    position: relative;
-    display: inline-block;
-    z-index: 10; /* ensures it appears above the background */
-}
 
-.dropdown button {
-    background-color: #5a2ca0;
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 25px;
-    cursor: pointer;
-    font-weight: bold;
-    font-size: 15px;
-    transition: background 0.3s ease;
-}
+                .dropdown {
+                    position: relative;
+                    display: inline-block;
+                    z-index: 10;
+                    /* ensures it appears above the background */
+                }
 
-.dropdown button:hover {
-    background-color: #7b44d2;
-}
+                .dropdown button {
+                    background-color: #5a2ca0;
+                    color: white;
+                    border: none;
+                    padding: 10px 20px;
+                    border-radius: 25px;
+                    cursor: pointer;
+                    font-weight: bold;
+                    font-size: 15px;
+                    transition: background 0.3s ease;
+                }
 
-.dropdown-content {
-    display: none;
-    position: absolute;
-    background-color: white;
-    top: 110%; /* dropdown appears below the button */
-    left: 0;
-    min-width: 230px;
-    padding: 15px;
-    border-radius: 10px;
-    box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2);
-    z-index: 999; /* stays above background image */
-}
+                .dropdown button:hover {
+                    background-color: #7b44d2;
+                }
 
-.dropdown-content form input {
-    width: 100%;
-    padding: 8px;
-    margin: 6px 0;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-}
+                .dropdown-content {
+                    display: none;
+                    position: absolute;
+                    background-color: white;
+                    top: 110%;
+                    /* dropdown appears below the button */
+                    left: 0;
+                    min-width: 230px;
+                    padding: 15px;
+                    border-radius: 10px;
+                    box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2);
+                    z-index: 999;
+                    /* stays above background image */
+                }
 
-.dropdown-content input[type="submit"] {
-    background-color: #5a2ca0;
-    color: white;
-    border: none;
-    padding: 8px 15px;
-    border-radius: 5px;
-    cursor: pointer;
-    width: 100%;
-}
+                .dropdown-content form input {
+                    width: 100%;
+                    padding: 8px;
+                    margin: 6px 0;
+                    border: 1px solid #ccc;
+                    border-radius: 5px;
+                }
 
-.dropdown:hover .dropdown-content {
-    display: block;
-}
+                .dropdown-content input[type="submit"] {
+                    background-color: #5a2ca0;
+                    color: white;
+                    border: none;
+                    padding: 8px 15px;
+                    border-radius: 5px;
+                    cursor: pointer;
+                    width: 100%;
+                }
 
+                .dropdown:hover .dropdown-content {
+                    display: block;
+                }
             </style>
         </head>
 
@@ -214,18 +217,18 @@ class PuppyLayout
                         <a href="login.php">Login</a>
                         <a href="register.php">register</a>
                         <div class="dropdown">
-    <button>Administration Home</button>
-    <div class="dropdown-content">
-        <form action="AdministrativeHome.php" method="POST">
-            <input type="text" name="username" placeholder="Username" required><br>
-            <input type="password" name="password" placeholder="Password" required><br>
-            <input type="submit" value="Login">
-        </form>
-    </div>
-</div>
-<?php endif; ?>
-</div>
-</div>
+                            <button>Administration Home</button>
+                            <div class="dropdown-content">
+                                <form action="admin/admin-dashboard.php" method="POST">
+                                    <input type="text" name="username" placeholder="Username" required><br>
+                                    <input type="password" name="password" placeholder="Password" required><br>
+                                    <input type="submit" value="Login">
+                                </form>
+                            </div>
+                        </div>
+                    <?php endif; ?>
+                </div>
+                </div>
 
             </nav>
             <div class="container py-4">
