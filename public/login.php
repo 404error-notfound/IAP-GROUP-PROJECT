@@ -12,7 +12,7 @@ $auth = new AuthController();
 if ($auth->isLoggedIn()) {
     $user = $auth->getCurrentUser();
     $defaultRedirect = 'client/client-dashboard.php';
-    
+
     if ($user && $user->getRoleName()) {
         switch ($user->getRoleName()) {
             case 'admin':
@@ -27,7 +27,7 @@ if ($auth->isLoggedIn()) {
                 break;
         }
     }
-    
+
     $redirectUrl = $_SESSION['redirect_after_login'] ?? $defaultRedirect;
     unset($_SESSION['redirect_after_login']);
     header("Location: $redirectUrl");
@@ -47,11 +47,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // Successful login - redirect based on user role
             $user = $auth->getCurrentUser();
             $defaultRedirect = 'client/client-dashboard.php'; // Default for clients
-            
+
             // Debug: Log login success
             error_log("LOGIN SUCCESS: User " . $identifier . " logged in successfully");
             error_log("User role: " . ($user ? $user->getRoleName() : 'NO USER'));
-            
+
             if ($user && $user->getRoleName()) {
                 switch ($user->getRoleName()) {
                     case 'admin':
@@ -69,10 +69,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             $redirectUrl = $_SESSION['redirect_after_login'] ?? $defaultRedirect;
             unset($_SESSION['redirect_after_login']);
-            
+
             // Debug: Log redirect
             error_log("REDIRECTING TO: " . $redirectUrl);
-            
+
             header("Location: $redirectUrl");
             exit;
         } else {
