@@ -177,7 +177,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         
                         $verification_link = 'http://' . $_SERVER['HTTP_HOST'] . 
                                            dirname($_SERVER['PHP_SELF']) . 
-                                           '/verify.php?token=' . $token;
+                                           '/verify-email.php?token=' . $token;
 
                         $sent = send_verification_email($email, $full_name, $verification_link);
 
