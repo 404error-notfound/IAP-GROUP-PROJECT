@@ -43,47 +43,99 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $identifier = trim($_POST['identifier'] ?? '');
         $password = $_POST['password'] ?? '';
 
-        if ($auth->login($identifier, $password)) {
-            // Successful login - redirect based on user role
-            $user = $auth->getCurrentUser();
-            $defaultRedirect = 'client/client-dashboard.php'; // Default for clients
-
-            // Debug: Log login success
-            error_log("LOGIN SUCCESS: User " . $identifier . " logged in successfully");
-            error_log("User role: " . ($user ? $user->getRoleName() : 'NO USER'));
-
-            if ($user && $user->getRoleName()) {
-                switch ($user->getRoleName()) {
-                    case 'admin':
-                        $defaultRedirect = 'admin/admin-dashboard.php';
-                        break;
-                    case 'rehomer':
-                        $defaultRedirect = 'rehomer/rehomer-dashboard.php';
-                        break;
-                    case 'client':
-                    default:
-                        $defaultRedirect = 'client/client-dashboard.php';
-                        break;
-                }
-            }
-
-            $redirectUrl = $_SESSION['redirect_after_login'] ?? $defaultRedirect;
-            unset($_SESSION['redirect_after_login']);
-
-            // Debug: Log redirect
-            error_log("REDIRECTING TO: " . $redirectUrl);
-
-            header("Location: $redirectUrl");
-            exit;
+        // Validate input
+        if (empty($identifier) || empty($password)) {
+            $errors[] = 'Please enter both email/username and password.';
         } else {
-            $errors = $auth->getErrors();
+            try {
+                // Get database configuration from environment
+                $db_host = $_ENV['DB_HOST'] ?? 'localhost';
+                $db_port = $_ENV['DB_PORT'] ?? '3307';
+                $db_name = $_ENV['DB_NAME'] ?? 'gopuppygo';
+                $db_user = $_ENV['DB_USER'] ?? 'root';
+                $db_pass = $_ENV['DB_PASS'] ?? '';
+                $db_charset = $_ENV['DB_CHARSET'] ?? 'utf8mb4';
+
+                // Create PDO connection
+                $dsn = "mysql:host={$db_host};port={$db_port};dbname={$db_name};charset={$db_charset}";
+                $pdo = new PDO($dsn, $db_user, $db_pass, [
+                    PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+                    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
+                ]);
+
+                // Check if user exists by email or username (full_name)
+                $stmt = $pdo->prepare('
+                    SELECT u.user_id, u.full_name, u.email, u.password_hash, u.verified, 
+                           ur.role_name, u.role_id
+                    FROM users u
+                    JOIN user_roles ur ON u.role_id = ur.role_id
+                    WHERE u.email = ? OR u.full_name = ?
+                ');
+                $stmt->execute([$identifier, $identifier]);
+                $user = $stmt->fetch();
+
+                if (!$user) {
+                    $errors[] = 'Invalid email/username or password.';
+                } elseif (!password_verify($password, $user['password_hash'])) {
+                    $errors[] = 'Invalid email/username or password.';
+                } elseif (!$user['verified']) {
+                    // User exists but email not verified
+                    $errors[] = 'Please verify your email address before logging in. Check your inbox for the verification link.';
+                    $messages[] = 'Didn\'t receive the email? Contact support for assistance.';
+                } else {
+                    // Login successful - set session variables
+                    $_SESSION['user_id'] = $user['user_id'];
+                    $_SESSION['user_email'] = $user['email'];
+                    $_SESSION['user_name'] = $user['full_name'];
+                    $_SESSION['user_role'] = $user['role_name'];
+                    $_SESSION['logged_in'] = true;
+
+                    // Debug logging
+                    error_log("LOGIN SUCCESS: User " . $identifier . " logged in successfully");
+                    error_log("User role: " . $user['role_name']);
+                    error_log("User ID: " . $user['user_id']);
+
+                    // Determine redirect based on role
+                    $defaultRedirect = 'client/client-dashboard.php';
+
+                    switch ($user['role_name']) {
+                        case 'admin':
+                            $defaultRedirect = 'admin/admin-dashboard.php';
+                            break;
+                        case 'rehomer':
+                            $defaultRedirect = 'rehomer/rehomer-dashboard.php';
+                            break;
+                        case 'client':
+                        default:
+                            $defaultRedirect = 'client/client-dashboard.php';
+                            break;
+                    }
+
+                    $redirectUrl = $_SESSION['redirect_after_login'] ?? $defaultRedirect;
+                    unset($_SESSION['redirect_after_login']);
+
+                    // Debug: Log redirect
+                    error_log("REDIRECTING TO: " . $redirectUrl);
+
+                    // Use absolute redirect to ensure it works
+                    header("Location: " . $redirectUrl);
+                    exit;
+                }
+
+            } catch (PDOException $e) {
+                error_log("Login DB Error: " . $e->getMessage());
+                $errors[] = 'A database error occurred. Please try again later.';
+            } catch (Exception $e) {
+                error_log("Login Error: " . $e->getMessage());
+                $errors[] = 'An error occurred during login. Please try again.';
+            }
         }
     }
 }
 
 // Get any flash messages
 if (isset($_SESSION['flash_messages'])) {
-    $messages = $_SESSION['flash_messages'];
+    $messages = array_merge($messages, $_SESSION['flash_messages']);
     unset($_SESSION['flash_messages']);
 }
 ?>
@@ -185,6 +237,12 @@ if (isset($_SESSION['flash_messages'])) {
             transform: translateY(0);
         }
 
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
         .forgot-password {
             margin: 20px 0;
             text-align: center;
@@ -241,7 +299,13 @@ if (isset($_SESSION['flash_messages'])) {
             color: #155724;
         }
 
-        .error-list {
+        .alert-warning {
+            background-color: #fff3cd;
+            border: 1px solid #ffeeba;
+            color: #856404;
+        }
+
+        .error-list, .success-list {
             list-style: none;
             margin: 0;
             padding: 0;
@@ -254,6 +318,15 @@ if (isset($_SESSION['flash_messages'])) {
         .error-list li:before {
             content: "• ";
             color: #dc3545;
+        }
+
+        .success-list li {
+            margin-bottom: 5px;
+        }
+
+        .success-list li:before {
+            content: "• ";
+            color: #28a745;
         }
 
         @media (max-width: 480px) {
@@ -286,8 +359,8 @@ if (isset($_SESSION['flash_messages'])) {
         <?php endif; ?>
 
         <?php if (!empty($messages)): ?>
-            <div class="alert alert-success">
-                <ul class="error-list">
+            <div class="alert alert-warning">
+                <ul class="success-list">
                     <?php foreach ($messages as $message): ?>
                         <li><?php echo htmlspecialchars($message); ?></li>
                     <?php endforeach; ?>
