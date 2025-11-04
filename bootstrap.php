@@ -1,5 +1,8 @@
 <?php
 
+// Start output buffering to prevent "headers already sent" errors
+ob_start();
+
 session_start();
 
 require __DIR__ . '/vendor/autoload.php';

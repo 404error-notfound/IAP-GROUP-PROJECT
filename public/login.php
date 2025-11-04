@@ -2,141 +2,128 @@
 // login.php
 require_once __DIR__ . '/../bootstrap.php';
 
-require_once __DIR__ . '/../src/Controllers/AuthController.php';
-
-use Angel\IapGroupProject\Controllers\AuthController;
-
-$auth = new AuthController();
-
-// Redirect if already logged in
-if ($auth->isLoggedIn()) {
-    $user = $auth->getCurrentUser();
-    $defaultRedirect = 'client/client-dashboard.php';
-
-    if ($user && $user->getRoleName()) {
-        switch ($user->getRoleName()) {
-            case 'admin':
-                $defaultRedirect = 'admin/admin-dashboard.php';
-                break;
-            case 'rehomer':
-                $defaultRedirect = 'rehomer/rehomer-dashboard.php';
-                break;
-            case 'client':
-            default:
-                $defaultRedirect = 'client/client-dashboard.php';
-                break;
-        }
-    }
-
-    $redirectUrl = $_SESSION['redirect_after_login'] ?? $defaultRedirect;
-    unset($_SESSION['redirect_after_login']);
-    header("Location: $redirectUrl");
-    exit;
-}
-
 $errors = [];
 $messages = [];
 
-// Handle login form submission
+// Debug: Log all POST requests
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (isset($_POST['login'])) {
-        $identifier = trim($_POST['identifier'] ?? '');
-        $password = $_POST['password'] ?? '';
+    error_log("LOGIN DEBUG: POST request received, POST keys: " . implode(', ', array_keys($_POST)));
+}
 
-        // Validate input
-        if (empty($identifier) || empty($password)) {
-            $errors[] = 'Please enter both email/username and password.';
-        } else {
-            try {
-                // Get database configuration from environment
-                $db_host = $_ENV['DB_HOST'] ?? 'localhost';
-                $db_port = $_ENV['DB_PORT'] ?? '3307';
-                $db_name = $_ENV['DB_NAME'] ?? 'gopuppygo';
-                $db_user = $_ENV['DB_USER'] ?? 'root';
-                $db_pass = $_ENV['DB_PASS'] ?? '';
-                $db_charset = $_ENV['DB_CHARSET'] ?? 'utf8mb4';
+// Handle login form submission - check for identifier field instead of login button
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['identifier'])) {
+    error_log("LOGIN DEBUG: Entering login handler");
+    $identifier = trim($_POST['identifier'] ?? '');
+    $password = $_POST['password'] ?? '';
 
-                // Create PDO connection
-                $dsn = "mysql:host={$db_host};port={$db_port};dbname={$db_name};charset={$db_charset}";
-                $pdo = new PDO($dsn, $db_user, $db_pass, [
-                    PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-                    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
-                ]);
+    if ($identifier && $password) {
+        try {
+            // Get database configuration from environment
+            $db_host = $_ENV['DB_HOST'] ?? 'localhost';
+            $db_port = $_ENV['DB_PORT'] ?? '3307';
+            $db_name = $_ENV['DB_NAME'] ?? 'gopuppygo';
+            $db_user = $_ENV['DB_USER'] ?? 'root';
+            $db_pass = $_ENV['DB_PASS'] ?? '';
+            $db_charset = $_ENV['DB_CHARSET'] ?? 'utf8mb4';
 
-                // Check if user exists by email or username (full_name)
-                $stmt = $pdo->prepare('
-                    SELECT u.user_id, u.full_name, u.email, u.password_hash, u.verified, 
-                           ur.role_name, u.role_id
-                    FROM users u
-                    JOIN user_roles ur ON u.role_id = ur.role_id
-                    WHERE u.email = ? OR u.full_name = ?
-                ');
-                $stmt->execute([$identifier, $identifier]);
-                $user = $stmt->fetch();
+            // Create PDO connection
+            $dsn = "mysql:host={$db_host};port={$db_port};dbname={$db_name};charset={$db_charset}";
+            $pdo = new PDO($dsn, $db_user, $db_pass, [
+                PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+                PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
+            ]);
 
-                if (!$user) {
-                    $errors[] = 'Invalid email/username or password.';
-                } elseif (!password_verify($password, $user['password_hash'])) {
-                    $errors[] = 'Invalid email/username or password.';
-                } elseif (!$user['verified']) {
-                    // User exists but email not verified
+            // Check if user exists by email or full_name
+            $stmt = $pdo->prepare('
+                SELECT u.user_id, u.full_name, u.email, u.password_hash, u.verified, 
+                       ur.role_name
+                FROM users u
+                JOIN user_roles ur ON u.role_id = ur.role_id
+                WHERE u.email = ? OR u.full_name = ?
+            ');
+            $stmt->execute([$identifier, $identifier]);
+            $user = $stmt->fetch();
+
+            error_log("LOGIN: User lookup for identifier '$identifier' - " . ($user ? "FOUND" : "NOT FOUND"));
+
+            // Check user exists and password is correct
+            if ($user && password_verify($password, $user['password_hash'])) {
+                error_log("LOGIN: Password verified for user_id={$user['user_id']}, verified={$user['verified']}, role={$user['role_name']}");
+                
+                // Check if email is verified
+                if (!$user['verified']) {
+                    error_log("LOGIN: User not verified, blocking login");
                     $errors[] = 'Please verify your email address before logging in. Check your inbox for the verification link.';
-                    $messages[] = 'Didn\'t receive the email? Contact support for assistance.';
                 } else {
-                    // Login successful - set session variables
-                    $_SESSION['user_id'] = $user['user_id'];
-                    $_SESSION['user_email'] = $user['email'];
-                    $_SESSION['user_name'] = $user['full_name'];
-                    $_SESSION['user_role'] = $user['role_name'];
-                    $_SESSION['logged_in'] = true;
+                    error_log("LOGIN: User verified, creating session");
+                    
+                    // Login successful - set session in the format AuthController expects
+                    $_SESSION['user'] = [
+                        'user_id' => $user['user_id'],
+                        'full_name' => $user['full_name'],
+                        'email' => $user['email'],
+                        'role_name' => $user['role_name'],
+                        'verified' => $user['verified']
+                    ];
+                    $_SESSION['login_time'] = time();
+                    $_SESSION['last_activity'] = time();
 
-                    // Debug logging
-                    error_log("LOGIN SUCCESS: User " . $identifier . " logged in successfully");
-                    error_log("User role: " . $user['role_name']);
-                    error_log("User ID: " . $user['user_id']);
+                    error_log("LOGIN: Session created - user_id={$_SESSION['user']['user_id']}, role={$_SESSION['user']['role_name']}");
 
                     // Determine redirect based on role
-                    $defaultRedirect = 'client/client-dashboard.php';
+                    $redirectUrl = 'client/client-dashboard.php'; // Default
 
                     switch ($user['role_name']) {
                         case 'admin':
-                            $defaultRedirect = 'admin/admin-dashboard.php';
+                            $redirectUrl = 'admin/admin-dashboard.php';
                             break;
                         case 'rehomer':
-                            $defaultRedirect = 'rehomer/rehomer-dashboard.php';
+                            $redirectUrl = 'rehomer/rehomer-dashboard.php';
                             break;
                         case 'client':
                         default:
-                            $defaultRedirect = 'client/client-dashboard.php';
+                            $redirectUrl = 'client/client-dashboard.php';
                             break;
                     }
 
-                    $redirectUrl = $_SESSION['redirect_after_login'] ?? $defaultRedirect;
-                    unset($_SESSION['redirect_after_login']);
-
-                    // Debug: Log redirect
-                    error_log("REDIRECTING TO: " . $redirectUrl);
-
-                    // Use absolute redirect to ensure it works
-                    header("Location: " . $redirectUrl);
+                    error_log("LOGIN: Redirecting to $redirectUrl");
+                    
+                    // Check if headers were already sent
+                    if (headers_sent($file, $line)) {
+                        error_log("LOGIN ERROR: Headers already sent in $file on line $line - cannot redirect!");
+                        error_log("LOGIN: Using JavaScript fallback redirect");
+                        echo "<script>window.location.href = '{$redirectUrl}';</script>";
+                        echo "<noscript><meta http-equiv='refresh' content='0;url={$redirectUrl}'></noscript>";
+                        exit;
+                    }
+                    
+                    // Redirect to dashboard
+                    header("Location: {$redirectUrl}");
                     exit;
                 }
-
-            } catch (PDOException $e) {
-                error_log("Login DB Error: " . $e->getMessage());
-                $errors[] = 'A database error occurred. Please try again later.';
-            } catch (Exception $e) {
-                error_log("Login Error: " . $e->getMessage());
-                $errors[] = 'An error occurred during login. Please try again.';
+            } else {
+                error_log("LOGIN: Authentication failed for identifier '$identifier'");
+                $errors[] = 'Invalid email/username or password.';
             }
+
+        } catch (PDOException $e) {
+            error_log("Login DB Error: " . $e->getMessage());
+            $errors[] = 'Database error. Please try again later.';
         }
+    } else {
+        $errors[] = 'All fields are required.';
     }
 }
 
-// Get any flash messages
+// Get any flash messages from session
 if (isset($_SESSION['flash_messages'])) {
-    $messages = array_merge($messages, $_SESSION['flash_messages']);
+    $messages = $_SESSION['flash_messages'];
     unset($_SESSION['flash_messages']);
+}
+
+// Check for verification success message
+if (isset($_GET['verified']) && $_GET['verified'] == '1') {
+    $messages[] = 'Your email has been verified successfully! You can now log in.';
 }
 ?>
 <!DOCTYPE html>
@@ -299,12 +286,6 @@ if (isset($_SESSION['flash_messages'])) {
             color: #155724;
         }
 
-        .alert-warning {
-            background-color: #fff3cd;
-            border: 1px solid #ffeeba;
-            color: #856404;
-        }
-
         .error-list, .success-list {
             list-style: none;
             margin: 0;
@@ -359,7 +340,7 @@ if (isset($_SESSION['flash_messages'])) {
         <?php endif; ?>
 
         <?php if (!empty($messages)): ?>
-            <div class="alert alert-warning">
+            <div class="alert alert-success">
                 <ul class="success-list">
                     <?php foreach ($messages as $message): ?>
                         <li><?php echo htmlspecialchars($message); ?></li>
@@ -413,23 +394,9 @@ if (isset($_SESSION['flash_messages'])) {
                 return;
             }
 
-            if (identifier.length < 3) {
-                e.preventDefault();
-                alert('Email or username must be at least 3 characters long.');
-                document.getElementById('identifier').focus();
-                return;
-            }
-
             if (!password) {
                 e.preventDefault();
                 alert('Please enter your password.');
-                document.getElementById('password').focus();
-                return;
-            }
-
-            if (password.length < 6) {
-                e.preventDefault();
-                alert('Password must be at least 6 characters long.');
                 document.getElementById('password').focus();
                 return;
             }

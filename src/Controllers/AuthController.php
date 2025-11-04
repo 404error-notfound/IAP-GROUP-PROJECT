@@ -86,10 +86,25 @@ class AuthController
         return null;
     }
 
-    public function requireLogin($redirectUrl = '/login.php')
+    public function requireLogin($redirectUrl = null)
     {
         if (!$this->isLoggedIn()) {
+            // Save where to return after login
             $_SESSION['redirect_after_login'] = $_SERVER['REQUEST_URI'];
+
+            // If no redirect URL supplied, compute a project-aware path to the public login page
+            if ($redirectUrl === null) {
+                // Try to transform current request URI into the project's public login path.
+                // Example: /IAP-GROUP-PROJECT/public/client/page.php -> /IAP-GROUP-PROJECT/public/login.php
+                $uri = $_SERVER['REQUEST_URI'] ?? '';
+                if (preg_match('#^(.*?/public)(?:/.*)?$#', $uri, $m)) {
+                    $redirectUrl = $m[1] . '/login.php';
+                } else {
+                    // Fallback to a relative login at /public/login.php
+                    $redirectUrl = '/public/login.php';
+                }
+            }
+
             header("Location: $redirectUrl");
             exit;
         }

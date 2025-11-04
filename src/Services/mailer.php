@@ -33,7 +33,7 @@ function send_verification_email($to_email, $to_name, $verification_link) {
         
         // Sender
         $mail->setFrom(
-            $_ENV['MAIL_FROM_ADDRESS'] ?? 'ngela.omondi@strathmore.edu',
+            $_ENV['MAIL_FROM_ADDRESS'] ?? 'angela.omondi@strathmore.edu',
             $_ENV['MAIL_FROM_NAME'] ?? 'Go Puppy Go'
         );
         
