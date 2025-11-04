@@ -36,9 +36,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['identifier'])) {
             // Check if user exists by email or full_name
             $stmt = $pdo->prepare('
                 SELECT u.user_id, u.full_name, u.email, u.password_hash, u.verified, 
-                       ur.role_name
+                       u.role_id, u.gender_id, u.created_at,
+                       ur.role_name,
+                       ug.gender_name
                 FROM users u
                 JOIN user_roles ur ON u.role_id = ur.role_id
+                LEFT JOIN user_gender ug ON u.gender_id = ug.gender_id
                 WHERE u.email = ? OR u.full_name = ?
             ');
             $stmt->execute([$identifier, $identifier]);
@@ -63,7 +66,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['identifier'])) {
                         'full_name' => $user['full_name'],
                         'email' => $user['email'],
                         'role_name' => $user['role_name'],
-                        'verified' => $user['verified']
+                        'role_id' => $user['role_id'],
+                        'gender_id' => $user['gender_id'],
+                        'gender_name' => $user['gender_name'] ?? null,
+                        'verified' => $user['verified'],
+                        'created_at' => $user['created_at']
                     ];
                     $_SESSION['login_time'] = time();
                     $_SESSION['last_activity'] = time();
