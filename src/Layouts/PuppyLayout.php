@@ -2,6 +2,8 @@
 
 namespace Angel\IapGroupProject\Layouts;
 
+echo "PuppyLayout loaded<br>";
+error_log("PuppyLayout reached line X");
 class PuppyLayout
 {
     public function header()
@@ -204,10 +206,9 @@ class PuppyLayout
                 <div class="navbar-left">
                     <h2 style="color: #5a2ca0;">Go.Puppy.Go</h2>
                     <a href="/home">Home</a>
-                    <a href="/about us ">About us</a>
-                    <a href="BrowsePuppy.php">Browse Puppies</a>
+                    <a href="/puppy/BrowsePuppy.php">Browse Puppies</a>
                     <?php if ($conf['isOwner']): ?>
-                        <a href="AddPuppy.php">Add Puppy</a>
+                        <a href="/puppy/AddPuppy.php">Add Puppy</a>
                     <?php endif; ?>
                 </div>
                 <div class="navbar-right">
@@ -244,7 +245,7 @@ class PuppyLayout
                         <div class="background">
                             <h2>Find Peace.Find your BestFriend</h2>
                             <p>We can change the world together. Adopt a puppy today and give them a loving home.</p>
-                            <button class="btn btn-outline-light" type="button">Example button</button>
+                            <a href="/puppy/Aboutus.php">About us</a>
                             <p>
                                 <?php echo htmlspecialchars($conf['message'] ?? ''); ?>
                             </p>

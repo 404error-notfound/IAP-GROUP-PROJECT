@@ -1,6 +1,8 @@
 <?php
-require_once __DIR__ . '/../src/Layouts/PuppyLayout.php';
-require_once __DIR__ . '/../src/Database.php';
+namespace Angel\IapGroupProject\Layouts;
+require_once __DIR__ . '/../../src/Database.php';
+require_once __DIR__ . '/../../src/Layouts/PuppyLayout.php';
+require_once __DIR__ . '/../../vendor/autoload.php';
 
 $layout = new PuppyLayout();
 $layout->header();
