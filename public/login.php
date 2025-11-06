@@ -2,89 +2,135 @@
 // login.php
 require_once __DIR__ . '/../bootstrap.php';
 
-require_once __DIR__ . '/../src/Controllers/AuthController.php';
-
-use Angel\IapGroupProject\Controllers\AuthController;
-
-$auth = new AuthController();
-
-// Redirect if already logged in
-if ($auth->isLoggedIn()) {
-    $user = $auth->getCurrentUser();
-    $defaultRedirect = 'client/client-dashboard.php';
-
-    if ($user && $user->getRoleName()) {
-        switch ($user->getRoleName()) {
-            case 'admin':
-                $defaultRedirect = 'admin/admin-dashboard.php';
-                break;
-            case 'rehomer':
-                $defaultRedirect = 'rehomer/rehomer-dashboard.php';
-                break;
-            case 'client':
-            default:
-                $defaultRedirect = 'client/client-dashboard.php';
-                break;
-        }
-    }
-
-    $redirectUrl = $_SESSION['redirect_after_login'] ?? $defaultRedirect;
-    unset($_SESSION['redirect_after_login']);
-    header("Location: $redirectUrl");
-    exit;
-}
-
 $errors = [];
 $messages = [];
 
-// Handle login form submission
+// Debug: Log all POST requests
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (isset($_POST['login'])) {
-        $identifier = trim($_POST['identifier'] ?? '');
-        $password = $_POST['password'] ?? '';
+    error_log("LOGIN DEBUG: POST request received, POST keys: " . implode(', ', array_keys($_POST)));
+}
 
-        if ($auth->login($identifier, $password)) {
-            // Successful login - redirect based on user role
-            $user = $auth->getCurrentUser();
-            $defaultRedirect = 'client/client-dashboard.php'; // Default for clients
+// Handle login form submission - check for identifier field instead of login button
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['identifier'])) {
+    error_log("LOGIN DEBUG: Entering login handler");
+    $identifier = trim($_POST['identifier'] ?? '');
+    $password = $_POST['password'] ?? '';
 
-            // Debug: Log login success
-            error_log("LOGIN SUCCESS: User " . $identifier . " logged in successfully");
-            error_log("User role: " . ($user ? $user->getRoleName() : 'NO USER'));
+    if ($identifier && $password) {
+        try {
+            // Get database configuration from environment
+            $db_host = $_ENV['DB_HOST'] ?? 'localhost';
+            $db_port = $_ENV['DB_PORT'] ?? '3307';
+            $db_name = $_ENV['DB_NAME'] ?? 'gopuppygo';
+            $db_user = $_ENV['DB_USER'] ?? 'root';
+            $db_pass = $_ENV['DB_PASS'] ?? '';
+            $db_charset = $_ENV['DB_CHARSET'] ?? 'utf8mb4';
 
-            if ($user && $user->getRoleName()) {
-                switch ($user->getRoleName()) {
-                    case 'admin':
-                        $defaultRedirect = 'admin/admin-dashboard.php';
-                        break;
-                    case 'rehomer':
-                        $defaultRedirect = 'rehomer/rehomer-dashboard.php';
-                        break;
-                    case 'client':
-                    default:
-                        $defaultRedirect = 'client/client-dashboard.php';
-                        break;
+            // Create PDO connection
+            $dsn = "mysql:host={$db_host};port={$db_port};dbname={$db_name};charset={$db_charset}";
+            $pdo = new PDO($dsn, $db_user, $db_pass, [
+                PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+                PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
+            ]);
+
+            // Check if user exists by email or full_name
+            $stmt = $pdo->prepare('
+                SELECT u.user_id, u.full_name, u.email, u.password_hash, u.verified, 
+                       u.role_id, u.gender_id, u.created_at,
+                       ur.role_name,
+                       ug.gender_name
+                FROM users u
+                JOIN user_roles ur ON u.role_id = ur.role_id
+                LEFT JOIN user_gender ug ON u.gender_id = ug.gender_id
+                WHERE u.email = ? OR u.full_name = ?
+            ');
+            $stmt->execute([$identifier, $identifier]);
+            $user = $stmt->fetch();
+
+            error_log("LOGIN: User lookup for identifier '$identifier' - " . ($user ? "FOUND" : "NOT FOUND"));
+
+            // Check user exists and password is correct
+            if ($user && password_verify($password, $user['password_hash'])) {
+                error_log("LOGIN: Password verified for user_id={$user['user_id']}, verified={$user['verified']}, role={$user['role_name']}");
+                
+                // Check if email is verified
+                if (!$user['verified']) {
+                    error_log("LOGIN: User not verified, blocking login");
+                    $errors[] = 'Please verify your email address before logging in. Check your inbox for the verification link.';
+                } else {
+                    error_log("LOGIN: User verified, creating session");
+                    
+                    // Login successful - set session in the format AuthController expects
+                    $_SESSION['user'] = [
+                        'user_id' => $user['user_id'],
+                        'full_name' => $user['full_name'],
+                        'email' => $user['email'],
+                        'role_name' => $user['role_name'],
+                        'role_id' => $user['role_id'],
+                        'gender_id' => $user['gender_id'],
+                        'gender_name' => $user['gender_name'] ?? null,
+                        'verified' => $user['verified'],
+                        'created_at' => $user['created_at']
+                    ];
+                    $_SESSION['login_time'] = time();
+                    $_SESSION['last_activity'] = time();
+
+                    error_log("LOGIN: Session created - user_id={$_SESSION['user']['user_id']}, role={$_SESSION['user']['role_name']}");
+
+                    // Determine redirect based on role
+                    $redirectUrl = 'client/client-dashboard.php'; // Default
+
+                    switch ($user['role_name']) {
+                        case 'admin':
+                            $redirectUrl = 'admin/admin-dashboard.php';
+                            break;
+                        case 'rehomer':
+                            $redirectUrl = 'rehomer/rehomer-dashboard.php';
+                            break;
+                        case 'client':
+                        default:
+                            $redirectUrl = 'client/client-dashboard.php';
+                            break;
+                    }
+
+                    error_log("LOGIN: Redirecting to $redirectUrl");
+                    
+                    // Check if headers were already sent
+                    if (headers_sent($file, $line)) {
+                        error_log("LOGIN ERROR: Headers already sent in $file on line $line - cannot redirect!");
+                        error_log("LOGIN: Using JavaScript fallback redirect");
+                        echo "<script>window.location.href = '{$redirectUrl}';</script>";
+                        echo "<noscript><meta http-equiv='refresh' content='0;url={$redirectUrl}'></noscript>";
+                        exit;
+                    }
+                    
+                    // Redirect to dashboard
+                    header("Location: {$redirectUrl}");
+                    exit;
                 }
+            } else {
+                error_log("LOGIN: Authentication failed for identifier '$identifier'");
+                $errors[] = 'Invalid email/username or password.';
             }
 
-            $redirectUrl = $_SESSION['redirect_after_login'] ?? $defaultRedirect;
-            unset($_SESSION['redirect_after_login']);
-
-            // Debug: Log redirect
-            error_log("REDIRECTING TO: " . $redirectUrl);
-
-            header("Location: $redirectUrl");
-            exit;
-        } else {
-            $errors = $auth->getErrors();
+        } catch (PDOException $e) {
+            error_log("Login DB Error: " . $e->getMessage());
+            $errors[] = 'Database error. Please try again later.';
         }
+    } else {
+        $errors[] = 'All fields are required.';
     }
 }
 
-// Get any flash messages
+// Get any flash messages from session
 if (isset($_SESSION['flash_messages'])) {
     $messages = $_SESSION['flash_messages'];
     unset($_SESSION['flash_messages']);
+}
+
+// Check for verification success message
+if (isset($_GET['verified']) && $_GET['verified'] == '1') {
+    $messages[] = 'Your email has been verified successfully! You can now log in.';
 }
 ?>
 <!DOCTYPE html>
@@ -185,6 +231,12 @@ if (isset($_SESSION['flash_messages'])) {
             transform: translateY(0);
         }
 
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
         .forgot-password {
             margin: 20px 0;
             text-align: center;
@@ -241,7 +293,7 @@ if (isset($_SESSION['flash_messages'])) {
             color: #155724;
         }
 
-        .error-list {
+        .error-list, .success-list {
             list-style: none;
             margin: 0;
             padding: 0;
@@ -254,6 +306,15 @@ if (isset($_SESSION['flash_messages'])) {
         .error-list li:before {
             content: "• ";
             color: #dc3545;
+        }
+
+        .success-list li {
+            margin-bottom: 5px;
+        }
+
+        .success-list li:before {
+            content: "• ";
+            color: #28a745;
         }
 
         @media (max-width: 480px) {
@@ -287,7 +348,7 @@ if (isset($_SESSION['flash_messages'])) {
 
         <?php if (!empty($messages)): ?>
             <div class="alert alert-success">
-                <ul class="error-list">
+                <ul class="success-list">
                     <?php foreach ($messages as $message): ?>
                         <li><?php echo htmlspecialchars($message); ?></li>
                     <?php endforeach; ?>
@@ -340,23 +401,9 @@ if (isset($_SESSION['flash_messages'])) {
                 return;
             }
 
-            if (identifier.length < 3) {
-                e.preventDefault();
-                alert('Email or username must be at least 3 characters long.');
-                document.getElementById('identifier').focus();
-                return;
-            }
-
             if (!password) {
                 e.preventDefault();
                 alert('Please enter your password.');
-                document.getElementById('password').focus();
-                return;
-            }
-
-            if (password.length < 6) {
-                e.preventDefault();
-                alert('Password must be at least 6 characters long.');
                 document.getElementById('password').focus();
                 return;
             }

@@ -8,7 +8,7 @@ $auth = new AuthController();
 
 // Redirect if already logged in
 if ($auth->isLoggedIn()) {
-    header("Location: dashboard.php");
+    header("Location: client-dashboard.php");
     exit;
 }
 
@@ -36,28 +36,175 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $location = $_POST['location'] ?? null;
         $contact_email_1 = $_POST['contact_email_1'] ?? null;
         $contact_email_2 = $_POST['contact_email_2'] ?? null;
-        
-        $registrationResult = $auth->register(
-            $email, 
-            $full_name, 
-            $password, 
-            $confirmPassword, 
-            $account_type, 
-            $gender, 
-            $phone, 
-            $preferred_breed, 
-            $preferred_age, 
-            $license_number, 
-            $location, 
-            $contact_email_1, 
-            $contact_email_2
-        );
-        
-        if ($registrationResult) {
-            $messages = $auth->getMessages();
-            // Don't redirect, show success message on same page
-        } else {
-            $errors = $auth->getErrors();
+
+        // Validation
+        if (empty($full_name) || empty($email) || empty($password)) {
+            $errors[] = 'All required fields must be filled.';
+        }
+
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            $errors[] = 'Invalid email address.';
+        }
+
+        if ($password !== $confirmPassword) {
+            $errors[] = 'Passwords do not match.';
+        }
+
+        if (strlen($password) < 8) {
+            $errors[] = 'Password must be at least 8 characters long.';
+        }
+
+        // Account-specific validation
+        if ($account_type === 'rehomer') {
+            if (empty($license_number)) {
+                $errors[] = 'License number is required for rehomers.';
+            }
+            if (empty($location)) {
+                $errors[] = 'Location is required for rehomers.';
+            }
+        }
+
+        // If no errors, proceed with registration
+        if (empty($errors)) {
+            try {
+                // Get database configuration from environment
+                $db_host = $_ENV['DB_HOST'] ?? 'localhost';
+                $db_port = $_ENV['DB_PORT'] ?? '3307';
+                $db_name = $_ENV['DB_NAME'] ?? 'gopuppygo';
+                $db_user = $_ENV['DB_USER'] ?? 'root';
+                $db_pass = $_ENV['DB_PASS'] ?? '';
+                $db_charset = $_ENV['DB_CHARSET'] ?? 'utf8mb4';
+
+                // Create PDO connection
+                $dsn = "mysql:host={$db_host};port={$db_port};dbname={$db_name};charset={$db_charset}";
+                $pdo = new PDO($dsn, $db_user, $db_pass, [
+                    PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+                    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
+                ]);
+
+                // Check if email already exists
+                $stmt = $pdo->prepare('SELECT user_id FROM users WHERE email = ?');
+                $stmt->execute([$email]);
+                if ($stmt->fetch()) {
+                    $errors[] = 'Email already exists.';
+                } else {
+                    // Begin transaction
+                    $pdo->beginTransaction();
+
+                    try {
+                        // Hash password
+                        $password_hash = password_hash($password, PASSWORD_DEFAULT);
+
+                        // Get role_id based on account_type
+                        $stmt = $pdo->prepare('SELECT role_id FROM user_roles WHERE role_name = ?');
+                        $stmt->execute([$account_type]);
+                        $role = $stmt->fetch();
+                        if (!$role) {
+                            throw new Exception('Invalid account type.');
+                        }
+                        $role_id = $role['role_id'];
+
+                        // Get gender_id if gender is provided
+                        $gender_id = null;
+                        if ($gender) {
+                            $gender_capitalized = ucfirst(strtolower($gender));
+                            $stmt = $pdo->prepare('SELECT gender_id FROM user_gender WHERE gender_name = ?');
+                            $stmt->execute([$gender_capitalized]);
+                            $gender_row = $stmt->fetch();
+                            if ($gender_row) {
+                                $gender_id = $gender_row['gender_id'];
+                            }
+                        }
+
+                        // Insert into users table
+                        $stmt = $pdo->prepare('
+                            INSERT INTO users (role_id, gender_id, full_name, email, password_hash, verified) 
+                            VALUES (?, ?, ?, ?, ?, FALSE)
+                        ');
+                        $stmt->execute([$role_id, $gender_id, $full_name, $email, $password_hash]);
+                        $user_id = $pdo->lastInsertId();
+
+                        // Insert into role-specific tables
+                        if ($account_type === 'client') {
+                            // Prepare dog preferences JSON
+                            $dog_preferences = json_encode([
+                                'preferred_breeds' => $preferred_breed,
+                                'preferred_age' => $preferred_age,
+                                'phone' => $phone
+                            ]);
+
+                            $stmt = $pdo->prepare('
+                                INSERT INTO clients (user_id, dog_preferences) 
+                                VALUES (?, ?)
+                            ');
+                            $stmt->execute([$user_id, $dog_preferences]);
+
+                        } elseif ($account_type === 'rehomer') {
+                            // Combine contact emails
+                            $contact_email = $contact_email_1 ?: $email;
+
+                            $stmt = $pdo->prepare('
+                                INSERT INTO rehomers (user_id, license_number, location, contact_email) 
+                                VALUES (?, ?, ?, ?)
+                            ');
+                            $stmt->execute([$user_id, $license_number, $location, $contact_email]);
+
+                        } elseif ($account_type === 'admin') {
+                            $stmt = $pdo->prepare('
+                                INSERT INTO admin (user_id) 
+                                VALUES (?)
+                            ');
+                            $stmt->execute([$user_id]);
+                        }
+
+                        // Generate verification token
+                        $token = bin2hex(random_bytes(32));
+                        $expires_at = date('Y-m-d H:i:s', strtotime('+24 hours'));
+
+                        $stmt = $pdo->prepare('
+                            INSERT INTO email_verification_tokens (user_id, token, expires_at) 
+                            VALUES (?, ?, ?)
+                        ');
+                        $stmt->execute([$user_id, $token, $expires_at]);
+
+                        // Commit transaction
+                        $pdo->commit();
+
+                        // Send verification email
+                        // mailer.php is in src/Services/, register.php is in public/
+                        // Path from public/ to src/Services/ is ../src/Services/
+                        require_once __DIR__ . '/../src/Services/mailer.php';
+                        
+                        $verification_link = 'http://' . $_SERVER['HTTP_HOST'] . 
+                                           dirname($_SERVER['PHP_SELF']) . 
+                                           '/verify-email.php?token=' . $token;
+
+                        $sent = send_verification_email($email, $full_name, $verification_link);
+
+                        if ($sent) {
+                            $messages[] = 'Registration successful! Please check your email to verify your account.';
+                            $messages[] = 'A verification link has been sent to ' . htmlspecialchars($email);
+                            $messages[] = 'The link will expire in 24 hours.';
+                        } else {
+                            $messages[] = 'Registration successful, but failed to send verification email.';
+                            $messages[] = 'Please contact support for assistance.';
+                        }
+
+                        // Clear POST data after successful registration
+                        $_POST = [];
+
+                    } catch (Exception $e) {
+                        // Rollback transaction on error
+                        $pdo->rollBack();
+                        throw $e;
+                    }
+                }
+
+            } catch (PDOException $e) {
+                $errors[] = 'Database error: ' . htmlspecialchars($e->getMessage());
+            } catch (Exception $e) {
+                $errors[] = 'Error: ' . htmlspecialchars($e->getMessage());
+            }
         }
     }
 }

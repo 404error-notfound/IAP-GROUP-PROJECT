@@ -1,12 +1,28 @@
 <?php
 // logout.php
-require_once __DIR__ . '/../src/Controllers/AuthController.php';
-use Angel\IapGroupProject\Controllers\AuthController;
-$auth = new AuthController();
-$auth->logout();
+// Location: public/logout.php
+// MUST start session first before destroying it!
+session_start();
 
-// Redirect to login page with a success message
+// Destroy all session data
+$_SESSION = array();
+
+// Destroy the session cookie
+if (ini_get("session.use_cookies")) {
+    $params = session_get_cookie_params();
+    setcookie(session_name(), '', time() - 42000,
+        $params["path"], $params["domain"],
+        $params["secure"], $params["httponly"]
+    );
+}
+
+// Destroy the session
+session_destroy();
+
+// Start a new session for the flash message
+session_start();
 $_SESSION['flash_messages'] = ["You have been logged out successfully."];
+
+// Redirect to login page
 header("Location: login.php");
 exit;
-?>
