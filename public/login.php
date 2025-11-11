@@ -149,7 +149,7 @@ if (isset($_GET['verified']) && $_GET['verified'] == '1') {
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background-color: #1a3a5c;
             min-height: 100vh;
             display: flex;
             align-items: center;
@@ -212,7 +212,7 @@ if (isset($_GET['verified']) && $_GET['verified'] == '1') {
         .btn {
             width: 100%;
             padding: 12px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background-color: #1a3a5c;
             color: white;
             border: none;
             border-radius: 10px;
