@@ -906,7 +906,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                 'Bloodhound',
                                 'Cocker Spaniel',
                                 'Mixed Breed',
-                                'No Preferences'
+                                'No Preferences',
+                                'Other'
                             ];
                             
                             $selected_breeds = $_POST['preferred_breed'] ?? [];

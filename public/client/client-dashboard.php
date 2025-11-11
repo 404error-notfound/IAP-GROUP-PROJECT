@@ -138,7 +138,7 @@ $preferences = $clientPrefs ? json_decode($clientPrefs, true) : null;
             <li><a href="my-adoptions.php"><i class="fas fa-file-alt"></i> My Applications</a></li>
             <li><a href="my-bookings.php"><i class="fas fa-calendar-alt"></i> My Bookings</a></li>
             <li><a href="my-reviews.php"><i class="fas fa-star"></i> My Reviews</a></li>
-            <li><a href="dog-breeds.php"><i class="fas fa-search"></i> Dog Breeds</a></li>
+            <li><a href="../dog-breeds.php"><i class="fas fa-search"></i> Dog Breeds</a></li>
         </ul>
     </aside>
 
