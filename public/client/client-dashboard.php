@@ -146,7 +146,7 @@ $preferences = $clientPrefs ? json_decode($clientPrefs, true) : null;
     <div class="main-content">
         <!-- Header -->
         <header class="header">
-            <a href="profile.php" class="header-btn">MY PROFILE</a>
+            <a href="client-profile.php" class="header-btn">MY PROFILE</a>
             <a href="../logout.php" class="header-btn logout-btn">LOGOUT</a>
         </header>
 
