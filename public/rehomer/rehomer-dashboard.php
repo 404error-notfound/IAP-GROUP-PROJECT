@@ -168,466 +168,54 @@ try {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Rehomer Dashboard - Go Puppy Go</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #1a3a5c;
-            min-height: 100vh;
-            color: #333;
-        }
-
-        header {
-            background: #fff;
-            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
-            padding: 20px 40px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        header h1 {
-            font-size: 1.8rem;
-            color: #444;
-        }
-
-        .user-info {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .user-info span {
-            font-size: 1rem;
-            color: #555;
-        }
-
-        .logout-btn {
-            background: #dc3545;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: background 0.3s ease;
-        }
-
-        .logout-btn:hover {
-            background: #c82333;
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 40px auto;
-            padding: 20px;
-        }
-
-        .welcome-section {
-            background: white;
-            border-radius: 15px;
-            padding: 30px;
-            margin-bottom: 30px;
-            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
-        }
-
-        .welcome-section h2 {
-            font-size: 2rem;
-            color: #333;
-            margin-bottom: 10px;
-        }
-
-        .welcome-section p {
-            color: #666;
-            font-size: 1.1rem;
-        }
-
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            margin: 30px 0;
-        }
-
-        .stat-card {
-            background: white;
-            border-radius: 15px;
-            padding: 25px;
-            text-align: center;
-            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-        }
-
-        .stat-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
-        }
-
-        .stat-card.dogs { border-left: 4px solid #3498db; }
-        .stat-card.requests { border-left: 4px solid #f39c12; }
-        .stat-card.bookings { border-left: 4px solid #2ecc71; }
-        .stat-card.reviews { border-left: 4px solid #e74c3c; }
-
-        .stat-icon {
-            font-size: 2.5rem;
-            margin-bottom: 10px;
-        }
-
-        .stat-number {
-            font-size: 2.5rem;
-            font-weight: bold;
-            color: #333;
-            margin: 10px 0;
-        }
-
-        .stat-label {
-            color: #666;
-            font-weight: 500;
-            font-size: 0.9rem;
-        }
-
-        .section {
-            background: white;
-            border-radius: 15px;
-            padding: 30px;
-            margin-bottom: 30px;
-            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
-        }
-
-        .section-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-
-        .section-title {
-            font-size: 1.5rem;
-            color: #333;
-        }
-
-        .view-all-link {
-            color: #667eea;
-            text-decoration: none;
-            font-weight: 600;
-        }
-
-        .view-all-link:hover {
-            text-decoration: underline;
-        }
-
-        .action-cards {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-        }
-
-        .action-card {
-            background: white;
-            border-radius: 15px;
-            padding: 25px;
-            text-align: center;
-            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
-            transition: transform 0.2s ease;
-            text-decoration: none;
-            color: inherit;
-        }
-
-        .action-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
-        }
-
-        .action-icon {
-            font-size: 2.5rem;
-            margin-bottom: 15px;
-        }
-
-        .action-card h3 {
-            font-size: 1.2rem;
-            color: #333;
-            margin-bottom: 10px;
-        }
-
-        .action-card p {
-            color: #666;
-            font-size: 0.9rem;
-        }
-
-        .dogs-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-            gap: 20px;
-        }
-
-        .dog-card {
-            background: #f8f9fa;
-            border-radius: 10px;
-            overflow: hidden;
-            transition: transform 0.2s;
-        }
-
-        .dog-card:hover {
-            transform: translateY(-2px);
-        }
-
-        .dog-image {
-            height: 180px;
-            background: #e9ecef;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-        }
-
-        .dog-image img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .dog-placeholder {
-            font-size: 3rem;
-            color: #ccc;
-        }
-
-        .dog-status {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            padding: 5px 10px;
-            border-radius: 15px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            text-transform: uppercase;
-        }
-
-        .dog-status.available { background: #28a745; color: white; }
-        .dog-status.adopted { background: #6c757d; color: white; }
-
-        .dog-info {
-            padding: 15px;
-        }
-
-        .dog-info h4 {
-            font-size: 1.1rem;
-            color: #333;
-            margin-bottom: 5px;
-        }
-
-        .dog-breed {
-            color: #666;
-            font-size: 0.9rem;
-            margin-bottom: 10px;
-        }
-
-        .dog-details {
-            color: #7f8c8d;
-            font-size: 0.85rem;
-        }
-
-        .requests-list {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-
-        .request-item {
-            display: flex;
-            align-items: center;
-            padding: 20px;
-            background: #f8f9fa;
-            border-radius: 10px;
-            border-left: 4px solid #f39c12;
-        }
-
-        .request-dog {
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            overflow: hidden;
-            margin-right: 20px;
-            flex-shrink: 0;
-        }
-
-        .request-dog img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .dog-placeholder-small {
-            width: 60px;
-            height: 60px;
-            background: #e9ecef;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.5rem;
-            color: #ccc;
-        }
-
-        .request-details {
-            flex: 1;
-        }
-
-        .request-details h4 {
-            font-size: 1.1rem;
-            color: #333;
-            margin-bottom: 5px;
-        }
-
-        .request-info {
-            color: #666;
-            font-size: 0.9rem;
-            margin-bottom: 3px;
-        }
-
-        .request-actions {
-            display: flex;
-            gap: 10px;
-        }
-
-        .btn-approve, .btn-reject {
-            padding: 8px 16px;
-            border: none;
-            border-radius: 6px;
-            font-weight: 600;
-            cursor: pointer;
-            font-size: 0.85rem;
-        }
-
-        .btn-approve {
-            background: #28a745;
-            color: white;
-        }
-
-        .btn-approve:hover {
-            background: #218838;
-        }
-
-        .btn-reject {
-            background: #dc3545;
-            color: white;
-        }
-
-        .btn-reject:hover {
-            background: #c82333;
-        }
-
-        .bookings-list {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-
-        .booking-item {
-            display: flex;
-            align-items: center;
-            padding: 20px;
-            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
-            border-radius: 12px;
-            border-left: 4px solid #2196f3;
-        }
-
-        .booking-date {
-            text-align: center;
-            margin-right: 20px;
-            flex-shrink: 0;
-        }
-
-        .booking-date .day {
-            font-size: 2rem;
-            font-weight: bold;
-            color: #2196f3;
-        }
-
-        .booking-date .month {
-            font-size: 0.8rem;
-            color: #666;
-            text-transform: uppercase;
-        }
-
-        .booking-details {
-            flex: 1;
-        }
-
-        .booking-details h4 {
-            font-size: 1.1rem;
-            color: #333;
-            margin-bottom: 5px;
-        }
-
-        .booking-info {
-            color: #666;
-            font-size: 0.9rem;
-        }
-
-        .alert {
-            padding: 15px 20px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-        }
-
-        .alert-danger {
-            background: #f8d7da;
-            border: 1px solid #f5c6cb;
-            color: #721c24;
-        }
-
-        @media (max-width: 768px) {
-            header {
-                flex-direction: column;
-                text-align: center;
-                gap: 15px;
-            }
-
-            .stats-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-
-            .action-cards {
-                grid-template-columns: 1fr;
-            }
-
-            .dogs-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .request-item {
-                flex-direction: column;
-                text-align: center;
-            }
-
-            .request-dog {
-                margin: 0 0 15px 0;
-            }
-        }
-    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../css/rehomer-dashboard.css">
 </head>
 <body>
-    <header>
-        <h1>🐾 Go Puppy Go - Rehomer Dashboard</h1>
-        <div class="user-info">
-            <span>Welcome, <strong><?php echo htmlspecialchars($userName); ?></strong></span>
-            <form method="POST" action="../logout.php" style="display: inline;">
-                <button type="submit" class="logout-btn">Logout</button>
-            </form>
-        </div>
-    </header>
+    <!-- Sidebar Toggle Button (Desktop) -->
+    <button class="sidebar-toggle-btn" onclick="toggleSidebar()" title="Toggle Sidebar">
+        <i class="fas fa-bars"></i>
+    </button>
 
-    <div class="container">
-        <?php if (isset($error)): ?>
-            <div class="alert alert-danger">
-                <?php echo htmlspecialchars($error); ?>
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar" id="sidebar">
+        <button class="menu-toggle" onclick="toggleSidebar()">
+            <i class="fas fa-bars"></i> Menu
+        </button>
+        <div class="sidebar-header">
+            <h2>🐾 GoPuppyGo</h2>
+        </div>
+        <ul class="nav-menu">
+            <li><a href="manage-dogs.php"><i class="fas fa-dog"></i> Manage Dogs</a></li>
+            <li><a href="adoption-requests.php"><i class="fas fa-clipboard-list"></i> Adoption Requests</a></li>
+            <li><a href="manage-bookings.php"><i class="fas fa-calendar-check"></i> Manage Bookings</a></li>
+            <li><a href="reviews.php"><i class="fas fa-star"></i> Reviews</a></li>
+            <li><a href="profile-settings.php"><i class="fas fa-cog"></i> Profile Settings</a></li>
+            <li><a href="../puppy/AddPuppy.php"><i class="fas fa-plus-circle"></i> Add New Dog</a></li>
+        </ul>
+    </aside>
+
+    <!-- Main Content Area -->
+    <div class="main-content">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-left">
+                <h1 class="dashboard-title">REHOMER DASHBOARD</h1>
+                <p class="welcome-message">Welcome back, <?php echo htmlspecialchars($userName); ?>! 🐾</p>
             </div>
-        <?php else: ?>
+            <div class="header-right">
+                <a href="profile-settings.php" class="header-btn">MY PROFILE</a>
+                <a href="../logout.php" class="header-btn logout-btn">LOGOUT</a>
+            </div>
+        </header>
+
+        <!-- Dashboard Content -->
+        <main class="dashboard-container">
+            <?php if (isset($error)): ?>
+                <div class="alert alert-danger">
+                    <?php echo htmlspecialchars($error); ?>
+                </div>
+            <?php else: ?>
 
             <div class="welcome-section">
                 <h2>Hello <?php echo htmlspecialchars($userName); ?>! 👋</h2>
@@ -636,86 +224,68 @@ try {
                    <strong>Location:</strong> <?php echo htmlspecialchars($rehomerData['location']); ?></p>
             </div>
 
-            <!-- Statistics Cards -->
+            <!-- Statistics Grid -->
             <div class="stats-grid">
                 <div class="stat-card dogs">
-                    <div class="stat-icon">🐶</div>
                     <div class="stat-number"><?php echo $stats['total_dogs']; ?></div>
                     <div class="stat-label">Total Dogs</div>
                     <div class="stat-details">
                         <small><?php echo $stats['available_dogs']; ?> Available • <?php echo $stats['adopted_dogs']; ?> Adopted</small>
                     </div>
                 </div>
-
                 <div class="stat-card requests">
-                    <div class="stat-icon">📋</div>
                     <div class="stat-number"><?php echo $stats['pending_requests']; ?></div>
                     <div class="stat-label">Pending Requests</div>
                 </div>
-
                 <div class="stat-card bookings">
-                    <div class="stat-icon">📅</div>
                     <div class="stat-number"><?php echo $stats['upcoming_bookings']; ?></div>
                     <div class="stat-label">Upcoming Bookings</div>
                 </div>
-
                 <div class="stat-card reviews">
-                    <div class="stat-icon">⭐</div>
                     <div class="stat-number"><?php echo $stats['avg_rating']; ?>/5</div>
-                    <div class="stat-label">Average Rating (<?php echo $stats['total_reviews']; ?> reviews)</div>
+                    <div class="stat-label">Avg Rating (<?php echo $stats['total_reviews']; ?> reviews)</div>
                 </div>
             </div>
 
-            <!-- Quick Actions -->
-            <div class="section">
+            <!-- Quick Actions Section -->
+            <div class="dashboard-section">
                 <div class="section-header">
-                    <h2 class="section-title">🚀 Quick Actions</h2>
+                    <h2 class="section-title">Quick Actions</h2>
                 </div>
-                <div class="action-cards">
-                    <a href="manage-dogs.php" class="action-card">
-                        <div class="action-icon">🐶</div>
-                        <h3>Manage Dogs</h3>
-                        <p>Add, edit, or remove dogs from your listing</p>
+                <div class="quick-actions">
+                    <a href="manage-dogs.php" class="action-btn">
+                        <i class="fas fa-dog"></i>
+                        <span>Manage Dogs</span>
                     </a>
-
-                    <a href="adoption-requests.php" class="action-card">
-                        <div class="action-icon">📋</div>
-                        <h3>Adoption Requests</h3>
-                        <p>Review and respond to adoption applications</p>
+                    <a href="adoption-requests.php" class="action-btn">
+                        <i class="fas fa-clipboard-list"></i>
+                        <span>Adoption Requests</span>
                     </a>
-
-                    <a href="manage-bookings.php" class="action-card">
-                        <div class="action-icon">📅</div>
-                        <h3>Manage Bookings</h3>
-                        <p>View and manage scheduled visits</p>
+                    <a href="manage-bookings.php" class="action-btn">
+                        <i class="fas fa-calendar-check"></i>
+                        <span>Manage Bookings</span>
                     </a>
-
-                    <a href="profile-settings.php" class="action-card">
-                        <div class="action-icon">⚙️</div>
-                        <h3>Profile Settings</h3>
-                        <p>Update your rehoming center information</p>
+                    <a href="reviews.php" class="action-btn">
+                        <i class="fas fa-star"></i>
+                        <span>Reviews</span>
                     </a>
-
-                    <a href="reviews.php" class="action-card">
-                        <div class="action-icon">⭐</div>
-                        <h3>Reviews</h3>
-                        <p>View feedback from clients</p>
+                    <a href="profile-settings.php" class="action-btn">
+                        <i class="fas fa-cog"></i>
+                        <span>Profile Settings</span>
                     </a>
-
-                    <a href="../support.php" class="action-card">
-                        <div class="action-icon">📞</div>
-                        <h3>Support</h3>
-                        <p>Contact admin or view FAQs</p>
+                    <a href="../puppy/AddPuppy.php" class="action-btn">
+                        <i class="fas fa-plus-circle"></i>
+                        <span>Add New Dog</span>
                     </a>
                 </div>
             </div>
 
             <!-- Recent Dogs -->
             <?php if (!empty($recentDogs)): ?>
-            <div class="section">
+            <div class="dashboard-section">
                 <div class="section-header">
-                    <h2 class="section-title">🐕 Recent Dogs</h2>
-                    <a href="manage-dogs.php" class="view-all-link">View All</a>
+                    <h2 class="section-title">Recent Dogs</h2>
+                    <a href="manage-dogs.php" class="section-link">View All →</a>
                 </div>
                 <div class="dogs-grid">
                     <?php foreach ($recentDogs as $dog): ?>
@@ -726,18 +296,18 @@ try {
                             <?php else: ?>
                                 <div class="dog-placeholder">🐕</div>
                             <?php endif; ?>
-                            <div class="dog-status <?php echo strtolower($dog['status']); ?>">
-                                <?php echo $dog['status']; ?>
-                            </div>
+                            <span class="dog-status <?php echo strtolower($dog['status']); ?>">
+                                <?php echo htmlspecialchars($dog['status']); ?>
+                            </span>
                         </div>
                         <div class="dog-info">
-                            <h4><?php echo htmlspecialchars($dog['name']); ?></h4>
-                            <p class="dog-breed"><?php echo htmlspecialchars($dog['breed_name']); ?></p>
-                            <p class="dog-details">
-                                <?php echo $dog['age'] ? $dog['age'] . ' years old' : 'Age unknown'; ?> •
-                                <?php echo $dog['gender_name'] ?? 'Unknown gender'; ?> •
-                                $<?php echo number_format($dog['adoption_fee'], 2); ?>
-                            </p>
+                            <h3 class="dog-name"><?php echo htmlspecialchars($dog['name']); ?></h3>
+                            <p class="dog-breed"><?php echo htmlspecialchars($dog['breed']); ?></p>
+                            <div class="dog-details">
+                                <span class="dog-tag"><?php echo htmlspecialchars($dog['age']); ?></span>
+                                <span class="dog-tag"><?php echo htmlspecialchars($dog['gender']); ?></span>
+                                <span class="dog-tag"><?php echo htmlspecialchars($dog['size']); ?></span>
+                            </div>
                         </div>
                     </div>
                     <?php endforeach; ?>
@@ -745,35 +315,31 @@ try {
             </div>
             <?php endif; ?>
 
-            <!-- Pending Requests -->
+            <!-- Pending Adoption Requests -->
             <?php if (!empty($pendingRequests)): ?>
-            <div class="section">
+            <div class="dashboard-section">
                 <div class="section-header">
-                    <h2 class="section-title">📋 Pending Adoption Requests</h2>
-                    <a href="adoption-requests.php" class="view-all-link">View All</a>
+                    <h2 class="section-title">Pending Adoption Requests</h2>
+                    <a href="adoption-requests.php" class="section-link">View All →</a>
                 </div>
                 <div class="requests-list">
                     <?php foreach ($pendingRequests as $request): ?>
-                    <div class="request-item">
-                        <div class="request-dog">
-                            <?php if ($request['image_url']): ?>
-                                <img src="<?php echo htmlspecialchars($request['image_url']); ?>" alt="<?php echo htmlspecialchars($request['dog_name']); ?>">
-                            <?php else: ?>
-                                <div class="dog-placeholder-small">🐕</div>
-                            <?php endif; ?>
-                        </div>
-                        <div class="request-details">
+                    <div class="request-card">
+                        <div class="request-info">
                             <h4><?php echo htmlspecialchars($request['dog_name']); ?></h4>
-                            <p class="request-info"><strong>Client:</strong> <?php echo htmlspecialchars($request['client_name']); ?></p>
-                            <p class="request-info"><strong>Email:</strong> <?php echo htmlspecialchars($request['client_email']); ?></p>
-                            <p class="request-info"><strong>Applied:</strong> <?php echo date('M j, Y g:i A', strtotime($request['applied_at'])); ?></p>
-                            <?php if ($request['message']): ?>
-                                <p class="request-info"><strong>Message:</strong> <?php echo htmlspecialchars($request['message']); ?></p>
-                            <?php endif; ?>
+                            <p><strong>Applicant:</strong> <?php echo htmlspecialchars($request['client_name']); ?></p>
+                            <p><strong>Email:</strong> <?php echo htmlspecialchars($request['client_email']); ?></p>
+                            <p><strong>Applied:</strong> <?php echo date('M d, Y', strtotime($request['request_date'])); ?></p>
                         </div>
                         <div class="request-actions">
-                            <button class="btn-approve" onclick="handleRequest(<?php echo $request['adoption_id']; ?>, 'approve')">Approve</button>
-                            <button class="btn-reject" onclick="handleRequest(<?php echo $request['adoption_id']; ?>, 'reject')">Reject</button>
+                            <button class="action-btn success" onclick="handleRequest(<?php echo $request['id']; ?>, 'approve')">
+                                <i class="fas fa-check"></i>
+                                <span>Approve</span>
+                            </button>
+                            <button class="action-btn danger" onclick="handleRequest(<?php echo $request['id']; ?>, 'decline')">
+                                <i class="fas fa-times"></i>
+                                <span>Decline</span>
+                            </button>
                         </div>
                     </div>
                     <?php endforeach; ?>
@@ -783,23 +349,22 @@ try {
 
             <!-- Upcoming Bookings -->
             <?php if (!empty($upcomingBookings)): ?>
-            <div class="section">
+            <div class="dashboard-section">
                 <div class="section-header">
-                    <h2 class="section-title">📅 Upcoming Bookings</h2>
-                    <a href="manage-bookings.php" class="view-all-link">View All</a>
+                    <h2 class="section-title">Upcoming Bookings</h2>
+                    <a href="manage-bookings.php" class="section-link">View All →</a>
                 </div>
                 <div class="bookings-list">
                     <?php foreach ($upcomingBookings as $booking): ?>
-                    <div class="booking-item">
+                    <div class="booking-card">
                         <div class="booking-date">
-                            <div class="day"><?php echo date('j', strtotime($booking['booking_date'])); ?></div>
-                            <div class="month"><?php echo date('M', strtotime($booking['booking_date'])); ?></div>
+                            <div class="date-day"><?php echo date('d', strtotime($booking['booking_date'])); ?></div>
+                            <div class="date-month"><?php echo date('M', strtotime($booking['booking_date'])); ?></div>
                         </div>
-                        <div class="booking-details">
+                        <div class="booking-info">
                             <h4>Visit with <?php echo htmlspecialchars($booking['dog_name']); ?></h4>
-                            <p class="booking-info"><strong>Client:</strong> <?php echo htmlspecialchars($booking['client_name']); ?></p>
-                            <p class="booking-info"><strong>Email:</strong> <?php echo htmlspecialchars($booking['client_email']); ?></p>
-                            <p class="booking-info"><strong>Time:</strong> <?php echo date('g:i A', strtotime($booking['booking_date'])); ?></p>
+                            <p><strong>Client:</strong> <?php echo htmlspecialchars($booking['client_name']); ?></p>
+                            <p><strong>Time:</strong> <?php echo date('g:i A', strtotime($booking['booking_date'])); ?></p>
                         </div>
                     </div>
                     <?php endforeach; ?>
@@ -807,21 +372,16 @@ try {
             </div>
             <?php endif; ?>
 
-        <?php endif; ?>
+            <?php endif; ?>
+
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer">
+            © 2024 GoPuppyGo
+        </footer>
     </div>
 
-    <script>
-        function handleRequest(adoptionId, action) {
-            if (confirm(`Are you sure you want to ${action} this adoption request?`)) {
-                // You can implement AJAX call here
-                window.location.href = `handle-adoption.php?id=${adoptionId}&action=${action}`;
-            }
-        }
-
-        // Auto-refresh every 5 minutes
-        setTimeout(function() {
-            location.reload();
-        }, 300000);
-    </script>
+    <script src="../js/rehomer-dashboard.js"></script>
 </body>
 </html>
