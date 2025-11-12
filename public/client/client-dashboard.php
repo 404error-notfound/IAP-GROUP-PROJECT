@@ -134,7 +134,7 @@ $preferences = $clientPrefs ? json_decode($clientPrefs, true) : null;
             <h2>🐾 GoPuppyGo</h2>
         </div>
         <ul class="nav-menu">
-            <li><a href="../puppy/BrowsePuppy.php"><i class="fas fa-paw"></i> Browse Dogs</a></li>
+            <li><a href="browse-dogs.php"><i class="fas fa-paw"></i> Browse Dogs</a></li>
             <li><a href="my-favourites.php"><i class="fas fa-heart"></i> My Favourites</a></li>
             <li><a href="my-adoptions.php"><i class="fas fa-file-alt"></i> My Applications</a></li>
             <li><a href="my-bookings.php"><i class="fas fa-calendar-alt"></i> My Bookings</a></li>
@@ -182,7 +182,7 @@ $preferences = $clientPrefs ? json_decode($clientPrefs, true) : null;
                     <h2 class="section-title">Quick Actions</h2>
                 </div>
                 <div class="quick-actions">
-                    <a href="../puppy/BrowsePuppy.php" class="action-btn">
+                    <a href="browse-dogs.php" class="action-btn">
                         <i class="fas fa-search"></i>
                         <span>Browse Dogs</span>
                     </a>
@@ -200,129 +200,6 @@ $preferences = $clientPrefs ? json_decode($clientPrefs, true) : null;
                     </a>
                 </div>
             </div>
-
-            <!-- Favourites Section -->
-            <?php if (!empty($recentFavourites)): ?>
-            <div class="dashboard-section">
-                <div class="section-header">
-                    <h2 class="section-title">Recent Favourites</h2>
-                    <a href="my-favourites.php" class="section-link">View All →</a>
-                </div>
-                <div>
-                    <?php foreach ($recentFavourites as $fav): ?>
-                    <div class="puppy-card">
-                        <?php if ($fav['image_url']): ?>
-                            <img src="<?php echo htmlspecialchars($fav['image_url']); ?>" alt="<?php echo htmlspecialchars($fav['name']); ?>" class="puppy-image">
-                        <?php else: ?>
-                            <div class="puppy-image" style="background: #e9ecef; display: flex; align-items: center; justify-content: center; font-size: 2rem;">🐕</div>
-                        <?php endif; ?>
-                        <div class="puppy-info">
-                            <div class="puppy-name"><?php echo htmlspecialchars($fav['name']); ?></div>
-                            <div class="puppy-details">
-                                <?php echo htmlspecialchars($fav['breed_name']); ?> • 
-                                <?php echo $fav['age'] ? $fav['age'] . ' years old' : 'Age unknown'; ?> • 
-                                $<?php echo number_format($fav['adoption_fee'], 2); ?>
-                            </div>
-                            <div class="puppy-details">📍 <?php echo htmlspecialchars($fav['location']); ?></div>
-                        </div>
-                    </div>
-                    <?php endforeach; ?>
-                </div>
-            </div>
-            <?php else: ?>
-            <div class="dashboard-section">
-                <div class="section-header">
-                    <h2 class="section-title">Recent Favourites</h2>
-                </div>
-                <div class="empty-state">
-                    <i class="fas fa-heart"></i>
-                    <p>No favourites yet. Start browsing dogs to add your favorites!</p>
-                </div>
-            </div>
-            <?php endif; ?>
-
-            <!-- Adoption Requests Section -->
-            <?php if (!empty($adoptionRequests)): ?>
-            <div class="dashboard-section">
-                <div class="section-header">
-                    <h2 class="section-title">Recent Adoption Requests</h2>
-                    <a href="my-adoptions.php" class="section-link">View All →</a>
-                </div>
-                <div>
-                    <?php foreach ($adoptionRequests as $request): ?>
-                    <div class="puppy-card">
-                        <?php if ($request['image_url']): ?>
-                            <img src="<?php echo htmlspecialchars($request['image_url']); ?>" alt="<?php echo htmlspecialchars($request['name']); ?>" class="puppy-image">
-                        <?php else: ?>
-                            <div class="puppy-image" style="background: #e9ecef; display: flex; align-items: center; justify-content: center; font-size: 2rem;">🐕</div>
-                        <?php endif; ?>
-                        <div class="puppy-info">
-                            <div class="puppy-name"><?php echo htmlspecialchars($request['name']); ?></div>
-                            <div class="puppy-details">
-                                <?php echo htmlspecialchars($request['breed_name']); ?> • 
-                                <?php echo $request['age'] ? $request['age'] . ' years' : 'Age unknown'; ?>
-                            </div>
-                            <div class="puppy-details">Applied: <?php echo date('M j, Y', strtotime($request['applied_at'])); ?></div>
-                            <span class="puppy-status status-<?php echo strtolower($request['status']); ?>">
-                                <?php echo $request['status']; ?>
-                            </span>
-                        </div>
-                    </div>
-                    <?php endforeach; ?>
-                </div>
-            </div>
-            <?php else: ?>
-            <div class="dashboard-section">
-                <div class="section-header">
-                    <h2 class="section-title">Adoption Requests</h2>
-                </div>
-                <div class="empty-state">
-                    <i class="fas fa-file-alt"></i>
-                    <p>No adoption requests yet. Find a dog and submit an application!</p>
-                </div>
-            </div>
-            <?php endif; ?>
-
-            <!-- Upcoming Bookings Section -->
-            <?php if (!empty($upcomingBookings)): ?>
-            <div class="dashboard-section">
-                <div class="section-header">
-                    <h2 class="section-title">Upcoming Bookings</h2>
-                    <a href="my-bookings.php" class="section-link">View All →</a>
-                </div>
-                <div>
-                    <?php foreach ($upcomingBookings as $booking): ?>
-                    <div class="puppy-card">
-                        <div style="width: 100px; height: 100px; background: #1a3a5c; color: white; border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-weight: bold;">
-                            <div style="font-size: 2rem;"><?php echo date('j', strtotime($booking['booking_date'])); ?></div>
-                            <div style="font-size: 0.9rem;"><?php echo date('M', strtotime($booking['booking_date'])); ?></div>
-                        </div>
-                        <div class="puppy-info">
-                            <div class="puppy-name">Visit with <?php echo htmlspecialchars($booking['name']); ?></div>
-                            <div class="puppy-details">
-                                <?php echo htmlspecialchars($booking['breed_name']); ?> • 
-                                <?php echo date('g:i A', strtotime($booking['booking_date'])); ?>
-                            </div>
-                            <div class="puppy-details">👤 <?php echo htmlspecialchars($booking['rehomer_name']); ?></div>
-                            <span class="puppy-status status-<?php echo strtolower($booking['status']); ?>">
-                                <?php echo $booking['status']; ?>
-                            </span>
-                        </div>
-                    </div>
-                    <?php endforeach; ?>
-                </div>
-            </div>
-            <?php else: ?>
-            <div class="dashboard-section">
-                <div class="section-header">
-                    <h2 class="section-title">Upcoming Bookings</h2>
-                </div>
-                <div class="empty-state">
-                    <i class="fas fa-calendar"></i>
-                    <p>No upcoming bookings. Schedule a visit with a dog you're interested in!</p>
-                </div>
-            </div>
-            <?php endif; ?>
 
         </main>
 

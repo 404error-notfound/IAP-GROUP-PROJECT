@@ -1,8 +1,16 @@
 <?php
-namespace Angel\IapGroupProject\Layouts;
+require_once __DIR__ . '/../../bootstrap.php';
 require_once __DIR__ . '/../../src/Database.php';
 require_once __DIR__ . '/../../src/Layouts/PuppyLayout.php';
-require_once __DIR__ . '/../../vendor/autoload.php';
+
+use Angel\IapGroupProject\Layouts\PuppyLayout;
+
+// Check if user is logged in as rehomer
+$userRole = $_SESSION['role'] ?? $_SESSION['user_role'] ?? null;
+if (!isset($_SESSION['user_id']) || $userRole !== 'rehomer') {
+    header("Location: ../login.php");
+    exit();
+}
 
 $layout = new PuppyLayout();
 $layout->header();
@@ -48,25 +56,59 @@ $layout->nav(['isLoggedIn' => true, 'isOwner' => true]);
     }
 </style>
 <div class="container mt-5">
-    <h2 class="mb-4" style="color: #5a2ca0;">Add a Puppy</h2>
+    <h2 class="mb-4" style="color: #5a2ca0;">Add a Dog</h2>
+    
+    <?php if (isset($_SESSION['success'])): ?>
+        <div class="alert alert-success"><?php echo $_SESSION['success']; unset($_SESSION['success']); ?></div>
+    <?php endif; ?>
+    
+    <?php if (isset($_SESSION['error'])): ?>
+        <div class="alert alert-danger"><?php echo $_SESSION['error']; unset($_SESSION['error']); ?></div>
+    <?php endif; ?>
+    
     <form action="AddPuppy_process.php" method="POST" enctype="multipart/form-data">
         <div class="mb-3">
-            <label>Puppy Name:</label>
+            <label>Dog Name:</label>
             <input type="text" name="name" class="form-control" required>
         </div>
+        
         <div class="mb-3">
             <label>Breed:</label>
-            <input type="text" name="breed" class="form-control" required>
+            <input type="text" name="breed" class="form-control" required placeholder="e.g., Labrador, Golden Retriever">
         </div>
+        
+        <div class="mb-3">
+            <label>Gender:</label>
+            <select name="gender" class="form-control" required>
+                <option value="">Select Gender</option>
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+            </select>
+        </div>
+        
         <div class="mb-3">
             <label>Age (months):</label>
-            <input type="number" name="age" class="form-control" required>
+            <input type="number" name="age" class="form-control" min="1" required>
         </div>
+        
+        <div class="mb-3">
+            <label>Adoption Fee (Ksh):</label>
+            <input type="number" name="adoption_fee" class="form-control" step="1" min="0" value="0" required>
+        </div>
+        
+        <div class="mb-3">
+            <label>Description:</label>
+            <textarea name="description" class="form-control" rows="4" placeholder="Tell us about this dog's personality, health status, and any special needs..."></textarea>
+        </div>
+        
         <div class="mb-3">
             <label>Image:</label>
-            <input type="file" name="image" class="form-control">
+            <input type="file" name="image" class="form-control" accept="image/*">
+            <small class="form-text text-muted">Accepted formats: JPG, JPEG, PNG, GIF</small>
         </div>
-        <button type="submit" class="btn btn-primary">Add Puppy</button>
+        
+        <button type="submit" class="btn btn-primary">Add Dog</button>
+        <a href="../rehomer/rehomer-dashboard.php" class="btn btn-secondary">Cancel</a>
     </form>
 </div>
 

@@ -302,11 +302,13 @@ try {
                         </div>
                         <div class="dog-info">
                             <h3 class="dog-name"><?php echo htmlspecialchars($dog['name']); ?></h3>
-                            <p class="dog-breed"><?php echo htmlspecialchars($dog['breed']); ?></p>
+                            <p class="dog-breed"><?php echo htmlspecialchars($dog['breed_name']); ?></p>
                             <div class="dog-details">
-                                <span class="dog-tag"><?php echo htmlspecialchars($dog['age']); ?></span>
-                                <span class="dog-tag"><?php echo htmlspecialchars($dog['gender']); ?></span>
-                                <span class="dog-tag"><?php echo htmlspecialchars($dog['size']); ?></span>
+                                <span class="dog-tag"><?php echo htmlspecialchars($dog['age']); ?> months</span>
+                                <?php if ($dog['gender_name']): ?>
+                                    <span class="dog-tag"><?php echo htmlspecialchars($dog['gender_name']); ?></span>
+                                <?php endif; ?>
+                                <span class="dog-tag">₵<?php echo number_format($dog['adoption_fee'], 0); ?></span>
                             </div>
                         </div>
                     </div>
@@ -329,14 +331,14 @@ try {
                             <h4><?php echo htmlspecialchars($request['dog_name']); ?></h4>
                             <p><strong>Applicant:</strong> <?php echo htmlspecialchars($request['client_name']); ?></p>
                             <p><strong>Email:</strong> <?php echo htmlspecialchars($request['client_email']); ?></p>
-                            <p><strong>Applied:</strong> <?php echo date('M d, Y', strtotime($request['request_date'])); ?></p>
+                            <p><strong>Applied:</strong> <?php echo date('M d, Y', strtotime($request['applied_at'])); ?></p>
                         </div>
                         <div class="request-actions">
-                            <button class="action-btn success" onclick="handleRequest(<?php echo $request['id']; ?>, 'approve')">
+                            <button class="action-btn success" onclick="handleRequest(<?php echo $request['adoption_id']; ?>, 'approve')">
                                 <i class="fas fa-check"></i>
                                 <span>Approve</span>
                             </button>
-                            <button class="action-btn danger" onclick="handleRequest(<?php echo $request['id']; ?>, 'decline')">
+                            <button class="action-btn danger" onclick="handleRequest(<?php echo $request['adoption_id']; ?>, 'decline')">
                                 <i class="fas fa-times"></i>
                                 <span>Decline</span>
                             </button>
