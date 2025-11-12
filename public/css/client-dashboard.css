@@ -142,7 +142,8 @@ body:not(.sidebar-collapsed) .sidebar-toggle-btn {
     display: flex;
     justify-content: flex-end;
     align-items: center;
-    gap: 15px;
+    gap: 5px;
+    flex-direction: column; 
 }
 
 .header-btn {
@@ -188,12 +189,14 @@ body:not(.sidebar-collapsed) .sidebar-toggle-btn {
     margin-bottom: 10px;
     text-transform: uppercase;
     letter-spacing: 1px;
+    margin: 0;
 }
 
 .welcome-message {
-    font-size: 1.1rem;
-    color: #666;
+    font-size: 1rem;
+    color: #555;
     margin-bottom: 40px;
+
 }
 
 /* Stats Grid */

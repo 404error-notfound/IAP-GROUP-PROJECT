@@ -147,15 +147,15 @@ $preferences = $clientPrefs ? json_decode($clientPrefs, true) : null;
     <div class="main-content">
         <!-- Header -->
         <header class="header">
+            <h1 class="dashboard-title">YOUR DASHBOARD</h1>
+            <br>
+            <p class="welcome-message">Welcome back, <?php echo htmlspecialchars($user->getFullName()); ?>! 🐾</p>
             <a href="client-profile.php" class="header-btn">MY PROFILE</a>
             <a href="../logout.php" class="header-btn logout-btn">LOGOUT</a>
         </header>
 
         <!-- Dashboard Content -->
         <main class="dashboard-container">
-            <h1 class="dashboard-title">YOUR DASHBOARD</h1>
-            <p class="welcome-message">Welcome back, <?php echo htmlspecialchars($user->getFullName()); ?>! 🐾</p>
-
             <!-- Statistics Grid -->
             <div class="stats-grid">
                 <div class="stat-card">
