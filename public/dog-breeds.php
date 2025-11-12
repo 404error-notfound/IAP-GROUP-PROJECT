@@ -52,6 +52,7 @@ function slugify($text) {
 <!doctype html>
 <html lang="en">
 <head>
+    <link rel="icon" href="/IAP-GROUP-PROJECT/public/images/favicon.svg" type="image/svg+xml">
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <title>Dog Breeds — GoPuppyGo</title>
@@ -101,7 +102,7 @@ function slugify($text) {
 <body>
     <div class="wrap">
         <header>
-            <h1>Dog Breeds</h1>
+            <h1 style="text-align: center;">Dog Breeds</h1>
         </header>
 
         <section class="grid">
