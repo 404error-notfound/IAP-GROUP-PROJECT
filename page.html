@@ -499,6 +499,208 @@
       font-size: 0.9rem;
     }
 
+    /* ===== MODAL STYLES ===== */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 2000;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    .modal-content {
+      background: white;
+      border-radius: 12px;
+      padding: 2.5rem;
+      max-width: 500px;
+      width: 90%;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      position: relative;
+      animation: slideIn 0.3s ease-out;
+    }
+
+    @keyframes slideIn {
+      from {
+        transform: translateY(-30px);
+        opacity: 0;
+      }
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 1.5rem;
+      right: 1.5rem;
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      cursor: pointer;
+      color: var(--text-secondary);
+      transition: color 0.3s;
+    }
+
+    .modal-close:hover {
+      color: var(--primary);
+    }
+
+    .modal-title {
+      font-size: 1.8rem;
+      margin-bottom: 0.5rem;
+      color: var(--primary);
+    }
+
+    .modal-subtitle {
+      color: var(--text-secondary);
+      margin-bottom: 1.5rem;
+      font-size: 0.95rem;
+    }
+
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 0.5rem;
+      color: var(--primary);
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+
+    .form-group input,
+    .form-group textarea,
+    .form-group select {
+      width: 100%;
+      padding: 0.75rem;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 0.95rem;
+      font-family: inherit;
+      transition: border-color 0.3s;
+    }
+
+    .form-group input:focus,
+    .form-group textarea:focus,
+    .form-group select:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.1);
+    }
+
+    .form-group textarea {
+      resize: vertical;
+      min-height: 100px;
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+
+    .form-row .form-group {
+      margin-bottom: 0;
+    }
+
+    .modal-buttons {
+      display: flex;
+      gap: 1rem;
+      margin-top: 2rem;
+    }
+
+    .btn-submit {
+      flex: 1;
+      background: var(--accent);
+      color: white;
+      padding: 0.75rem 1.5rem;
+      border: none;
+      border-radius: 6px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      font-size: 0.95rem;
+    }
+
+    .btn-submit:hover {
+      background: var(--accent-light);
+      transform: translateY(-2px);
+    }
+
+    .btn-cancel {
+      flex: 1;
+      background: var(--neutral-light);
+      color: var(--text-primary);
+      padding: 0.75rem 1.5rem;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      font-size: 0.95rem;
+    }
+
+    .btn-cancel:hover {
+      background: var(--border);
+    }
+
+    /* ===== CONTACT INFO MODAL ===== */
+    .contact-info {
+      text-align: center;
+    }
+
+    .contact-item {
+      margin: 2rem 0;
+      padding: 1.5rem;
+      background: var(--neutral-light);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .contact-icon {
+      font-size: 2rem;
+    }
+
+    .contact-details {
+      text-align: left;
+      flex: 1;
+    }
+
+    .contact-label {
+      color: var(--text-secondary);
+      font-size: 0.85rem;
+      margin-bottom: 0.25rem;
+    }
+
+    .contact-value {
+      color: var(--primary);
+      font-weight: 600;
+      font-size: 1.1rem;
+    }
+
+    .contact-value a {
+      color: var(--primary);
+      text-decoration: none;
+      transition: color 0.3s;
+    }
+
+    .contact-value a:hover {
+      color: var(--accent);
+    }
+
     /* ===== RESPONSIVE ===== */
     @media (max-width: 768px) {
       .nav-links {
@@ -553,6 +755,14 @@
       .testimonials-grid {
         grid-template-columns: 1fr;
       }
+
+      .form-row {
+        grid-template-columns: 1fr;
+      }
+
+      .modal-content {
+        padding: 1.5rem;
+      }
     }
 
     @media (max-width: 480px) {
@@ -585,7 +795,7 @@
         <li><a href="#services">Services</a></li>
         <li><a href="#stories">Success Stories</a></li>
         <li><a href="#testimonials">Reviews</a></li>
-        <li><button class="nav-cta">Contact</button></li>
+        <li><button class="nav-cta" id="contactBtn">Contact</button></li>
       </ul>
     </nav>
   </header>
@@ -597,7 +807,7 @@
       <p>Transforming lives, one rescue at a time. Specializing in behavioral rehabilitation, trauma recovery, and helping abused and neglected dogs find their forever homes with loving families.</p>
       
       <div class="hero-buttons">
-        <button class="btn-primary">Schedule Consultation</button>
+        <button class="btn-primary" id="scheduleBtn">Schedule Consultation</button>
         <button class="btn-secondary">Learn Our Mission</button>
       </div>
 
@@ -810,5 +1020,163 @@
       <p class="footer-copy">&copy; 2025 Go Puppy Reformer Program. Transforming lives, one rescue at a time. 🐾</p>
     </div>
   </footer>
+
+  <!-- CONSULTATION MODAL -->
+  <div class="modal-overlay" id="consultationModal">
+    <div class="modal-content">
+      <button class="modal-close" onclick="closeModal('consultationModal')">✕</button>
+      <h2 class="modal-title">Schedule a Consultation</h2>
+      <p class="modal-subtitle">Tell us about your dog and we'll find the perfect plan</p>
+      
+      <form id="consultationForm" onsubmit="handleConsultationSubmit(event)">
+        <div class="form-group">
+          <label for="ownerName">Your Name *</label>
+          <input type="text" id="ownerName" name="ownerName" required>
+        </div>
+
+        <div class="form-group">
+          <label for="ownerEmail">Email *</label>
+          <input type="email" id="ownerEmail" name="ownerEmail" required>
+        </div>
+
+        <div class="form-group">
+          <label for="ownerPhone">Phone Number *</label>
+          <input type="tel" id="ownerPhone" name="ownerPhone" required>
+        </div>
+
+        <div class="form-group">
+          <label for="dogName">Dog's Name *</label>
+          <input type="text" id="dogName" name="dogName" required>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="dogBreed">Breed</label>
+            <input type="text" id="dogBreed" name="dogBreed">
+          </div>
+          <div class="form-group">
+            <label for="dogAge">Age</label>
+            <input type="text" id="dogAge" name="dogAge" placeholder="e.g., 2 years">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="preferredDate">Preferred Consultation Date *</label>
+          <input type="date" id="preferredDate" name="preferredDate" required>
+        </div>
+
+        <div class="form-group">
+          <label for="concerns">Tell us about your dog's needs *</label>
+          <textarea id="concerns" name="concerns" placeholder="Describe any behavioral issues, trauma, or specific concerns..." required></textarea>
+        </div>
+
+        <div class="modal-buttons">
+          <button type="submit" class="btn-submit">Book Consultation</button>
+          <button type="button" class="btn-cancel" onclick="closeModal('consultationModal')">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- CONTACT INFO MODAL -->
+  <div class="modal-overlay" id="contactModal">
+    <div class="modal-content">
+      <button class="modal-close" onclick="closeModal('contactModal')">✕</button>
+      <h2 class="modal-title">Get in Touch</h2>
+      <p class="modal-subtitle">We're here to help. Reach out today!</p>
+      
+      <div class="contact-info">
+        <div class="contact-item">
+          <div class="contact-icon">📧</div>
+          <div class="contact-details">
+            <div class="contact-label">Email</div>
+            <div class="contact-value">
+              <a href="mailto:sarah@gopuppy.com">sarah@gopuppy.com</a>
+            </div>
+          </div>
+        </div>
+
+        <div class="contact-item">
+          <div class="contact-icon">📱</div>
+          <div class="contact-details">
+            <div class="contact-label">Phone</div>
+            <div class="contact-value">
+              <a href="tel:+1234567890">(123) 456-7890</a>
+            </div>
+          </div>
+        </div>
+
+        <div class="contact-item">
+          <div class="contact-icon">🐾</div>
+          <div class="contact-details">
+            <div class="contact-label">Response Time</div>
+            <div class="contact-value">Usually within 24 hours</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-buttons">
+        <button type="button" class="btn-submit" onclick="closeModal('contactModal')">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // <CHANGE> Added JavaScript for modal functionality
+    const scheduleBtn = document.getElementById('scheduleBtn');
+    const contactBtn = document.getElementById('contactBtn');
+    const consultationModal = document.getElementById('consultationModal');
+    const contactModal = document.getElementById('contactModal');
+
+    // Open consultation modal
+    scheduleBtn.addEventListener('click', () => {
+      consultationModal.classList.add('active');
+    });
+
+    // Open contact modal
+    contactBtn.addEventListener('click', () => {
+      contactModal.classList.add('active');
+    });
+
+    // Close modal function
+    function closeModal(modalId) {
+      document.getElementById(modalId).classList.remove('active');
+    }
+
+    // Close modal when clicking outside
+    document.addEventListener('click', (e) => {
+      if (e.target.classList.contains('modal-overlay')) {
+        e.target.classList.remove('active');
+      }
+    });
+
+    // Handle form submission
+    function handleConsultationSubmit(event) {
+      event.preventDefault();
+      
+      const formData = {
+        ownerName: document.getElementById('ownerName').value,
+        ownerEmail: document.getElementById('ownerEmail').value,
+        ownerPhone: document.getElementById('ownerPhone').value,
+        dogName: document.getElementById('dogName').value,
+        dogBreed: document.getElementById('dogBreed').value,
+        dogAge: document.getElementById('dogAge').value,
+        preferredDate: document.getElementById('preferredDate').value,
+        concerns: document.getElementById('concerns').value,
+      };
+
+      console.log('Consultation Request:', formData);
+      
+      // Show success message
+      alert(`Thank you ${formData.ownerName}! We've received your consultation request for ${formData.dogName}. We'll contact you at ${formData.ownerPhone} to confirm the appointment.`);
+      
+      // Reset form and close modal
+      document.getElementById('consultationForm').reset();
+      closeModal('consultationModal');
+      
+      // In a real application, you would send this data to a backend server
+      // Example: fetch('/api/schedule-consultation', { method: 'POST', body: JSON.stringify(formData) })
+    }
+  </script>
 </body>
 </html>
