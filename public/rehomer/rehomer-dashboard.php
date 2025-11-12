@@ -164,6 +164,7 @@ try {
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <link rel="icon" href="/IAP-GROUP-PROJECT/public/images/gopuppygo-logo.svg" type="image/svg+xml">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Rehomer Dashboard - Go Puppy Go</title>
@@ -176,7 +177,7 @@ try {
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #89f7fe 0%, #66a6ff 100%);
+            background: #1a3a5c;
             min-height: 100vh;
             color: #333;
         }

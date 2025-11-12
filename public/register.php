@@ -8,7 +8,8 @@ $auth = new AuthController();
 
 // Redirect if already logged in
 if ($auth->isLoggedIn()) {
-    header("Location: client-dashboard.php");
+    // The dashboard lives under the `client/` subdirectory
+    header("Location: client/client-dashboard.php");
     exit;
 }
 ini_set('display_errors', 1);
@@ -36,9 +37,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
         $preferred_age = $_POST['preferred_age'] ?? null;
         $license_number = $_POST['license_number'] ?? null;
-        $location = $_POST['location'] ?? null;
-        $contact_email_1 = $_POST['contact_email_1'] ?? null;
-        $contact_email_2 = $_POST['contact_email_2'] ?? null;
+    $location = $_POST['location'] ?? null;
+    // Single contact email for rehomers
+    $contact_email = $_POST['contact_email'] ?? null;
 
         // Validation
         if (empty($full_name) || empty($email) || empty($password)) {
@@ -143,8 +144,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             $stmt->execute([$user_id, $dog_preferences]);
 
                         } elseif ($account_type === 'rehomer') {
-                            // Combine contact emails
-                            $contact_email = $contact_email_1 ?: $email;
+                            // Use provided contact email or fall back to account email
+                            $contact_email = $contact_email ?: $email;
 
                             $stmt = $pdo->prepare('
                                 INSERT INTO rehomers (user_id, license_number, location, contact_email) 
@@ -215,6 +216,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <link rel="icon" href="/IAP-GROUP-PROJECT/public/images/favicon.svg" type="image/svg+xml">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Registration - Go Puppy Go</title>
@@ -227,7 +229,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background-color: #f8f9fa;
+            background-color: #1a3a5c;
             min-height: 100vh;
             padding: 20px;
         }
@@ -908,7 +910,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                 'Bloodhound',
                                 'Cocker Spaniel',
                                 'Mixed Breed',
-                                'No Preferences'
+                                'No Preferences',
+                                'Other'
                             ];
                             
                             $selected_breeds = $_POST['preferred_breed'] ?? [];
@@ -947,7 +950,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </div>
 
                 <!-- License Information Section - Only for Rehomers -->
-                <div class="section-title" id="license-section" style="display: none;">License number</div>
+                <div class="section-title" id="license-section" style="display: none;">License Details</div>
                 
                 <div class="form-row" id="license-fields" style="display: none;">
                     <div class="form-group">
@@ -972,17 +975,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <div class="form-group">
                         <input 
                             type="email" 
-                            name="contact_email_1" 
+                            name="contact_email" 
                             placeholder="Contact email"
-                            id="contact_email_1_field"
-                        >
-                    </div>
-                    <div class="form-group">
-                        <input 
-                            type="email" 
-                            name="contact_email_2" 
-                            placeholder="Contact email"
-                            id="contact_email_2_field"
+                            id="contact_email_field"
                         >
                     </div>
                 </div>
@@ -1035,8 +1030,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             const licenseInputs = [
                 document.getElementById('license_number_field'),
                 document.getElementById('location_field'),
-                document.getElementById('contact_email_1_field'),
-                document.getElementById('contact_email_2_field')
+                document.getElementById('contact_email_field')
             ];
 
             if (rehomerRadio.checked) {

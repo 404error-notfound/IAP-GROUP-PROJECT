@@ -112,6 +112,7 @@ $preferences = $clientPrefs ? json_decode($clientPrefs, true) : null;
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <link rel="icon" href="/IAP-GROUP-PROJECT/public/images/favicon.svg" type="image/svg+xml">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Client Dashboard - Go Puppy Go</title>
@@ -138,7 +139,7 @@ $preferences = $clientPrefs ? json_decode($clientPrefs, true) : null;
             <li><a href="my-adoptions.php"><i class="fas fa-file-alt"></i> My Applications</a></li>
             <li><a href="my-bookings.php"><i class="fas fa-calendar-alt"></i> My Bookings</a></li>
             <li><a href="my-reviews.php"><i class="fas fa-star"></i> My Reviews</a></li>
-            <li><a href="dog-breeds.php"><i class="fas fa-search"></i> Dog Breeds</a></li>
+            <li><a href="../dog-breeds.php"><i class="fas fa-search"></i> Dog Breeds</a></li>
         </ul>
     </aside>
 
@@ -146,15 +147,15 @@ $preferences = $clientPrefs ? json_decode($clientPrefs, true) : null;
     <div class="main-content">
         <!-- Header -->
         <header class="header">
-            <a href="profile.php" class="header-btn">MY PROFILE</a>
+            <h1 class="dashboard-title">YOUR DASHBOARD</h1>
+            <br>
+            <p class="welcome-message">Welcome back, <?php echo htmlspecialchars($user->getFullName()); ?>! 🐾</p>
+            <a href="client-profile.php" class="header-btn">MY PROFILE</a>
             <a href="../logout.php" class="header-btn logout-btn">LOGOUT</a>
         </header>
 
         <!-- Dashboard Content -->
         <main class="dashboard-container">
-            <h1 class="dashboard-title">YOUR DASHBOARD</h1>
-            <p class="welcome-message">Welcome back, <?php echo htmlspecialchars($user->getFullName()); ?>! 🐾</p>
-
             <!-- Statistics Grid -->
             <div class="stats-grid">
                 <div class="stat-card">
