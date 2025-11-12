@@ -1,12 +1,11 @@
 <?php
-session_start();
-
 require_once __DIR__ . '/../../bootstrap.php';
 
 use Angel\IapGroupProject\Database;
 
 // Check if user is logged in as client
-if (!isset($_SESSION['user_id']) || ($_SESSION['role'] !== 'client' && $_SESSION['user_role'] !== 'client')) {
+$userRole = $_SESSION['role'] ?? $_SESSION['user_role'] ?? null;
+if (!isset($_SESSION['user_id']) || $userRole !== 'client') {
     header("Location: ../login.php");
     exit();
 }

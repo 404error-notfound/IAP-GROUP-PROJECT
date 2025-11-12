@@ -144,60 +144,7 @@ if (!isset($_SESSION['user_id']) || $userRole !== 'rehomer') {
             text-align: center;
             margin-top: 30px;
         }
-        
-        .file-info {
-            font-size: 0.9em;
-            color: #666;
-            margin-top: 5px;
-        }
-        
-        .file-error {
-            color: #dc3545;
-            font-size: 0.9em;
-            margin-top: 5px;
-        }
     </style>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const form = document.querySelector('form');
-            const fileInput = document.querySelector('input[name="image"]');
-            const maxSize = 5 * 1024 * 1024; // 5MB limit
-            
-            // File size validation
-            fileInput.addEventListener('change', function() {
-                const fileInfo = document.querySelector('.file-info');
-                const fileError = document.querySelector('.file-error');
-                
-                if (fileError) fileError.remove();
-                
-                if (this.files.length > 0) {
-                    const file = this.files[0];
-                    const fileSizeMB = (file.size / (1024 * 1024)).toFixed(2);
-                    
-                    if (file.size > maxSize) {
-                        const errorMsg = document.createElement('div');
-                        errorMsg.className = 'file-error';
-                        errorMsg.textContent = `File is too large (${fileSizeMB} MB). Maximum size is 5 MB.`;
-                        fileInput.parentElement.appendChild(errorMsg);
-                        fileInput.value = ''; // Clear the file
-                    } else {
-                        if (fileInfo) {
-                            fileInfo.textContent = `Selected: ${file.name} (${fileSizeMB} MB)`;
-                        }
-                    }
-                }
-            });
-            
-            // Form submission validation
-            form.addEventListener('submit', function(e) {
-                if (fileInput.files.length > 0 && fileInput.files[0].size > maxSize) {
-                    e.preventDefault();
-                    alert('Please select an image smaller than 5 MB');
-                    return false;
-                }
-            });
-        });
-    </script>
 </head>
 <body>
     <div class="container">
@@ -253,8 +200,7 @@ if (!isset($_SESSION['user_id']) || $userRole !== 'rehomer') {
             <div class="form-group">
                 <label for="image">Image:</label>
                 <input type="file" id="image" name="image" accept="image/*">
-                <small class="form-text">Max size: 5 MB. Accepted formats: JPG, JPEG, PNG, GIF</small>
-                <div class="file-info"></div>
+                <small class="form-text">Accepted formats: JPG, JPEG, PNG, GIF</small>
             </div>
             
             <div class="button-group">
