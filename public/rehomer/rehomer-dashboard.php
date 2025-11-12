@@ -177,7 +177,7 @@ try {
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #89f7fe 0%, #66a6ff 100%);
+            background: #1a3a5c;
             min-height: 100vh;
             color: #333;
         }

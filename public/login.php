@@ -75,26 +75,40 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['identifier'])) {
                     $_SESSION['login_time'] = time();
                     $_SESSION['last_activity'] = time();
 
+                    // Legacy session keys expected by older pages (keep for compatibility)
+                    $_SESSION['logged_in'] = true;
+                    $_SESSION['user_role'] = $user['role_name'];
+                    $_SESSION['user_id'] = $user['user_id'];
+                    $_SESSION['user_name'] = $user['full_name'];
+                    $_SESSION['user_email'] = $user['email'];
+
                     error_log("LOGIN: Session created - user_id={$_SESSION['user']['user_id']}, role={$_SESSION['user']['role_name']}");
 
-                    // Determine redirect based on role
-                    $redirectUrl = 'client/client-dashboard.php'; // Default
-
-                    switch ($user['role_name']) {
+                    // Determine redirect based on role (case-insensitive) and use absolute paths
+                    $role = strtolower($user['role_name'] ?? '');
+                    $base = '/IAP-GROUP-PROJECT/public/';
+                    switch ($role) {
                         case 'admin':
-                            $redirectUrl = 'admin/admin-dashboard.php';
+                            $redirectUrl = $base . 'admin/admin-dashboard.php';
                             break;
                         case 'rehomer':
-                            $redirectUrl = 'rehomer/rehomer-dashboard.php';
+                            $redirectUrl = $base . 'rehomer/rehomer-dashboard.php';
                             break;
                         case 'client':
                         default:
-                            $redirectUrl = 'client/client-dashboard.php';
+                            $redirectUrl = $base . 'client/client-dashboard.php';
                             break;
                     }
 
-                    error_log("LOGIN: Redirecting to $redirectUrl");
-                    
+                    error_log("LOGIN: Redirecting to $redirectUrl (raw role: {$user['role_name']})");
+
+                    // Ensure any accidental output is cleared so headers can be sent
+                    if (function_exists('ob_get_level') && ob_get_level() > 0) {
+                        while (ob_get_level() > 0) {
+                            @ob_end_clean();
+                        }
+                    }
+
                     // Check if headers were already sent
                     if (headers_sent($file, $line)) {
                         error_log("LOGIN ERROR: Headers already sent in $file on line $line - cannot redirect!");
@@ -103,7 +117,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['identifier'])) {
                         echo "<noscript><meta http-equiv='refresh' content='0;url={$redirectUrl}'></noscript>";
                         exit;
                     }
-                    
+
                     // Redirect to dashboard
                     header("Location: {$redirectUrl}");
                     exit;
