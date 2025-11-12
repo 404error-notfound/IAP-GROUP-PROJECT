@@ -55,7 +55,7 @@ $layout->nav(['isLoggedIn' => true, 'isOwner' => true]);
     <form method="GET" action="BrowsePuppy.php" class="mb-4">
         <div class="mb-3">
             <label>Breed:</label>
-            <input type="text" name="age" class="form-control" required>
+            <input type="text" name="Breed" class="form-control" required>
         </div>
         <div class="mb-3">
             <label>Age(months):</label>
@@ -72,10 +72,6 @@ $layout->nav(['isLoggedIn' => true, 'isOwner' => true]);
         <div class="mb-3">
             <label>Status:</label>
             <input type="text" name="Status" class="form-control" required>
-        </div>
-        <div class="mb-3">
-            <label>Image:</label>
-            <input type="file" name="image" class="form-control">
         </div>
         <button class="btn btn-primary" type="submit">Search</button>
 </div>

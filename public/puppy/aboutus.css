@@ -2,10 +2,8 @@ body {
   background: linear-gradient(135deg, #f8f9fa, #e6e6ff);
   font-family: Arial, sans-serif;
   margin: 0;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
+  min-height: 100vh;
+  padding-top: 50px;
 }
 
 .revolving-scene {
@@ -26,13 +24,13 @@ body {
   position: relative;
   width: 70%;
   max-width: 800px;
-  height: 400px;
   background: #fff;
   border-radius: 20px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
   overflow: hidden;
   text-align: center;
   padding: 40px;
+  margin: 0 auto;
 }
 .slide{
   display: none;
